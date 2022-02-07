@@ -1,12 +1,14 @@
 package com.sparta.api.spartarestapi.entities;
 
+
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-import javax.persistence.*;
+
 import java.util.Objects;
 
-@Document("Test3")
+@Document("SpartanDB")
 public class CourseEntity {
     @Id
     @Field("course_id")

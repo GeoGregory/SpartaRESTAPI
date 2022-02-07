@@ -1,13 +1,14 @@
 package com.sparta.api.spartarestapi.entities;
 
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-import javax.persistence.*;
+
 import java.time.LocalDate;
 import java.util.Objects;
 
-@Document("Test3")
+@Document("SpartanDB")
 public class SpartanEntity {
     @Id
     private String id;
