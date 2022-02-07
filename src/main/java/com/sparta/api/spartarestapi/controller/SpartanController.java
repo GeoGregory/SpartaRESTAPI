@@ -23,6 +23,6 @@ public class SpartanController {
     @GetMapping("/")
     public CollectionModel<SpartanEntity> getSpartans(){
         System.out.println(repository.findAll().size());
-        return CollectionModel.of(repository.findAll());
+        return CollectionModel.of(repository.findAllByFirstnameIsNotNull());
     }
 }
