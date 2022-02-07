@@ -1,26 +1,20 @@
 package com.sparta.api.spartarestapi.entities;
 
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+
 import javax.persistence.*;
 import java.util.Objects;
 
-@Entity
-@Table(name = "Test3", schema = "API")
+@Document("Test3")
 public class CourseEntity {
     @Id
-    @Basic
-    @Column(name = "course_id")
+    @Field("course_id")
     private String courseId;
-    @Basic
-    @Column(name = "course_name")
+    @Field("course_name")
     private String courseName;
-    @Basic
-    @Column(name = "description")
     private String description;
-    @Basic
-    @Column(name = "isActive")
     private Boolean isActive;
-    @Basic
-    @Column(name = "length")
     private Integer length;
 
     public String getCourseId() {

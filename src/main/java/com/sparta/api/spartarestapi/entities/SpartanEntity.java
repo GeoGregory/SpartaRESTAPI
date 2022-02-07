@@ -1,30 +1,21 @@
 package com.sparta.api.spartarestapi.entities;
 
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.Objects;
 
-@Entity
-@Table(name = "Test3", schema = "API")
+@Document("Test3")
 public class SpartanEntity {
     @Id
-    @Basic
-    @Column(name = "_id")
     private String id;
-    @Basic
-    @Column(name = "courseEndDate")
     private LocalDate courseEndDate;
-    @Basic
-    @Column(name = "courseStartDate")
     private LocalDate courseStartDate;
-    @Basic
-    @Column(name = "course_id")
+    @Field("course_id")
     private String courseId;
-    @Basic
-    @Column(name = "firstname")
     private String firstname;
-    @Basic
-    @Column(name = "lastName")
     private String lastName;
 
     public String getId() {
