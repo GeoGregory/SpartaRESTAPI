@@ -1,7 +1,6 @@
 package com.sparta.api.spartarestapi.controller;
 
 import com.sparta.api.spartarestapi.entities.CourseEntity;
-import com.sparta.api.spartarestapi.entities.SpartanEntity;
 import com.sparta.api.spartarestapi.repositories.CourseRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
@@ -18,9 +17,8 @@ public class CourseController {
         this.repository = repository;
     }
 
-    @GetMapping("/course")
+    @GetMapping("/courses")
     public CollectionModel<CourseEntity> getSpartans(){
-        System.out.println(repository.findAll().size());
         return CollectionModel.of(repository.findAllByCourseNameIsNotNull());
     }
 }
