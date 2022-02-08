@@ -45,30 +45,55 @@ public class SpartansFactory {
                     allSpartans.retainAll(spartansBeforeStart);
                 }
                 else if (spartansParameters.get("startEnd").equals("end")) {
-                    List<SpartanEntity> spartansBeforeStart = spartanRepository.findAllByCourseEndDateIsBefore(LocalDate.parse(spartansParameters.get(
-                            "date")));
+                    List<SpartanEntity> spartansBeforeStart = new ArrayList<>();
+                    for (SpartanEntity spartan: allSpartans) {
+                        if (spartan.getCourseStartDate() != null && spartan.getCourseEndDate() != null) {
+                            if (LocalDate.parse(spartan.getCourseEndDate().trim()).isBefore(LocalDate.parse(spartansParameters.get("date").trim())))
+                                spartansBeforeStart.add(spartan);
+                        }
+                    }
                     allSpartans.retainAll(spartansBeforeStart);
                 }
             } else if (spartansParameters.get("beforeAfter").equals("after")){
                 if (spartansParameters.get("startEnd").equals("start")) {
-                    List<SpartanEntity> spartansBeforeStart = spartanRepository.findAllByCourseStartDateIsAfter(LocalDate.parse(spartansParameters.get(
-                            "date")));
+                    List<SpartanEntity> spartansBeforeStart = new ArrayList<>();
+                    for (SpartanEntity spartan: allSpartans) {
+                        if (spartan.getCourseStartDate() != null && spartan.getCourseEndDate() != null) {
+                            if (LocalDate.parse(spartan.getCourseStartDate().trim()).isAfter(LocalDate.parse(spartansParameters.get("date").trim())))
+                                spartansBeforeStart.add(spartan);
+                        }
+                    }
                     allSpartans.retainAll(spartansBeforeStart);
                 }
                 else if (spartansParameters.get("startEnd").equals("end")) {
-                    List<SpartanEntity> spartansBeforeStart = spartanRepository.findAllByCourseEndDateIsAfter(LocalDate.parse(spartansParameters.get(
-                            "date")));
+                    List<SpartanEntity> spartansBeforeStart = new ArrayList<>();
+                    for (SpartanEntity spartan: allSpartans) {
+                        if (spartan.getCourseStartDate() != null && spartan.getCourseEndDate() != null) {
+                            if (LocalDate.parse(spartan.getCourseEndDate().trim()).isAfter(LocalDate.parse(spartansParameters.get("date").trim())))
+                                spartansBeforeStart.add(spartan);
+                        }
+                    }
                     allSpartans.retainAll(spartansBeforeStart);
                 }
             } else if (spartansParameters.get("beforeAfter").equals("now")){
                 if (spartansParameters.get("startEnd").equals("start")) {
-                    List<SpartanEntity> spartansBeforeStart = spartanRepository.findAllByCourseStartDate(LocalDate.parse(spartansParameters.get(
-                            "date")));
+                    List<SpartanEntity> spartansBeforeStart = new ArrayList<>();
+                    for (SpartanEntity spartan: allSpartans) {
+                        if (spartan.getCourseStartDate() != null && spartan.getCourseEndDate() != null) {
+                            if (LocalDate.parse(spartan.getCourseStartDate().trim()).isEqual(LocalDate.parse(spartansParameters.get("date").trim())))
+                                spartansBeforeStart.add(spartan);
+                        }
+                    }
                     allSpartans.retainAll(spartansBeforeStart);
                 }
                 else if (spartansParameters.get("startEnd").equals("end")) {
-                    List<SpartanEntity> spartansBeforeStart = spartanRepository.findAllByCourseEndDate(LocalDate.parse(spartansParameters.get(
-                            "date")));
+                    List<SpartanEntity> spartansBeforeStart = new ArrayList<>();
+                    for (SpartanEntity spartan: allSpartans) {
+                        if (spartan.getCourseStartDate() != null && spartan.getCourseEndDate() != null) {
+                            if (LocalDate.parse(spartan.getCourseEndDate().trim()).isEqual(LocalDate.parse(spartansParameters.get("date").trim())))
+                                spartansBeforeStart.add(spartan);
+                        }
+                    }
                     allSpartans.retainAll(spartansBeforeStart);
                 }
             }

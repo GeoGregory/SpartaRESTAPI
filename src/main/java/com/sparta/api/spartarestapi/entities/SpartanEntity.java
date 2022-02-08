@@ -9,8 +9,8 @@ import java.util.Objects;
 public class SpartanEntity {
     @Id
     private String id;
-    private LocalDate courseEndDate;
-    private LocalDate courseStartDate;
+    private String courseEndDate;
+    private String  courseStartDate;
     @Field("course_id")
     private String courseId;
     private String firstname;
@@ -32,11 +32,11 @@ public class SpartanEntity {
         this.courseEndDate = courseEndDate;
     }
 
-    public LocalDate getCourseStartDate() {
+    public String getCourseStartDate() {
         return courseStartDate;
     }
 
-    public void setCourseStartDate(LocalDate courseStartDate) {
+    public void setCourseStartDate(String courseStartDate) {
         this.courseStartDate = courseStartDate;
     }
 
