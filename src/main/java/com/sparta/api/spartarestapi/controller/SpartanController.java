@@ -1,6 +1,8 @@
 package com.sparta.api.spartarestapi.controller;
 
+import com.sparta.api.spartarestapi.entities.CourseEntity;
 import com.sparta.api.spartarestapi.entities.SpartanEntity;
+import com.sparta.api.spartarestapi.repositories.CourseRepository;
 import com.sparta.api.spartarestapi.factories.SpartansFactory;
 import com.sparta.api.spartarestapi.repositories.SpartanRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,10 +33,12 @@ import java.time.format.DateTimeFormatter;
 public class SpartanController {
 
     private final SpartanRepository repository;
+    private final CourseRepository courseRepository;
 
     @Autowired
-    public SpartanController(SpartanRepository repository) {
+    public SpartanController(SpartanRepository repository, CourseRepository courseRepository) {
         this.repository = repository;
+        this.courseRepository = courseRepository;
     }
 
     @GetMapping("/spartans")
@@ -64,18 +68,12 @@ public class SpartanController {
 
     @PostMapping("/spartans")
     public SpartanEntity addSpartan(@RequestBody SpartanEntity spartan) throws ValidationException {
-
-        if (spartan.getFirstname() != null && spartan.getLastName() != null
+        if (spartan.getFirstName() != null && spartan.getLastName() != null
                 && spartan.getCourseStartDate() != null && spartan.getCourseId() != null) {
-
             if(checkSpartan(spartan)){
-
-
-                if( spartan.getCourseId() == 6) {
-
-                    return calculateEndDate(spartan, 5);
-                } else {
-                    return calculateEndDate(spartan, 8);
+                CourseEntity course = courseRepository.findByCourseId(spartan.getCourseId()).orElseThrow();
+                if( spartan.getCourseId().equals(course.getCourseId())) {
+                    return calculateEndDate(spartan, course.getLength());
                 }
             }
         }
@@ -86,8 +84,8 @@ public class SpartanController {
     public ResponseEntity<SpartanEntity> updateSpartan(@RequestBody SpartanEntity updatedSpartan) throws ValidationException {
         if(repository.findById(updatedSpartan.getId()).isPresent()) {
             SpartanEntity spartan = repository.findById(updatedSpartan.getId()).orElseThrow();
-            if(updatedSpartan.getFirstname() == null) {
-                updatedSpartan.setFirstname(spartan.getFirstname());
+            if(updatedSpartan.getFirstName() == null) {
+                updatedSpartan.setFirstName(spartan.getFirstName());
             }
             if(updatedSpartan.getLastName() == null) {
                 updatedSpartan.setLastName(spartan.getLastName());
@@ -100,13 +98,12 @@ public class SpartanController {
             }
             if(checkSpartan(updatedSpartan)) {
                 if(updatedSpartan.getCourseEndDate() == null) {
-                    if( updatedSpartan.getCourseId() == 6) {
-                        return new ResponseEntity<>(calculateEndDate(updatedSpartan, 5), HttpStatus.OK);
-                    } else {
-                        return new ResponseEntity<>(calculateEndDate(updatedSpartan, 8), HttpStatus.OK);
+                    CourseEntity course = courseRepository.findByCourseId(updatedSpartan.getCourseId()).orElseThrow();
+                    if( updatedSpartan.getCourseId().equals(course.getCourseId())) {
+                        return new ResponseEntity<>(calculateEndDate(updatedSpartan, course.getLength()), HttpStatus.OK);
                     }
                 } else {
-                    if(LocalDate.parse(spartan.getCourseEndDate()).isBefore(LocalDate.of(2050,12,31))) {
+                    if(LocalDate.parse(updatedSpartan.getCourseEndDate()).isBefore(LocalDate.of(2050,12,31))) {
                         return new ResponseEntity<>(repository.save(updatedSpartan), HttpStatus.OK);
                     } else {
                         throw new ValidationException("Spartan cannot be created due to invalid details");
@@ -118,11 +115,15 @@ public class SpartanController {
     }
 
     private SpartanEntity calculateEndDate(SpartanEntity spartan, int weeksToAdd) throws ValidationException {
+        return getSpartanEntity(spartan, weeksToAdd, repository);
+    }
+
+    static SpartanEntity getSpartanEntity(SpartanEntity spartan, int weeksToAdd, SpartanRepository spartanRepository) throws ValidationException {
         String endDate = LocalDate.parse(spartan.getCourseStartDate()).plusWeeks(weeksToAdd)
                 .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         spartan.setCourseEndDate(String.valueOf(LocalDate.parse(endDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"))));
         if( LocalDate.parse(spartan.getCourseEndDate()).isBefore(LocalDate.of(2050,12,31))) {
-            return repository.save(spartan);
+            return spartanRepository.save(spartan);
         }
         else {
             throw new ValidationException("Spartan cannot be created due to invalid details");
@@ -130,10 +131,10 @@ public class SpartanController {
     }
 
     private boolean checkSpartan(SpartanEntity spartan) {
-        return spartan.getFirstname().length() <= 100 && spartan.getLastName().length() <= 100
+        return spartan.getFirstName().length() <= 100 && spartan.getLastName().length() <= 100
                 && LocalDate.parse(spartan.getCourseStartDate()).isAfter(LocalDate.of(2022,1,1))
                 && spartan.getCourseId() > 0
-                && spartan.getCourseId() < 7;
+                && spartan.getCourseId() < courseRepository.findAllByCourseNameIsNotNull().size();
     }
 
 }
