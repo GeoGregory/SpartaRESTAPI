@@ -15,7 +15,7 @@ public class SpartanEntity {
     private String courseEndDate;
     private String courseStartDate;
     @Field("course_id")
-    private String courseId;
+    private Integer courseId;
     private String firstname;
     private String lastName;
 
@@ -43,11 +43,11 @@ public class SpartanEntity {
         this.courseStartDate = courseStartDate;
     }
 
-    public String getCourseId() {
+    public Integer getCourseId() {
         return courseId;
     }
 
-    public void setCourseId(String courseId) {
+    public void setCourseId(Integer courseId) {
         this.courseId = courseId;
     }
 
