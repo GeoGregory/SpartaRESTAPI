@@ -1,10 +1,8 @@
 package com.sparta.api.spartarestapi.entities;
 
-
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
-
 
 import java.util.Objects;
 
@@ -19,6 +17,14 @@ public class CourseEntity {
     private String description;
     private Boolean isActive;
     private Integer length;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public Integer getCourseId() {
         return courseId;

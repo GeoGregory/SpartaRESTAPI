@@ -10,4 +10,5 @@ import java.util.List;
 public interface SpartanRepository extends MongoRepository <SpartanEntity, String> {
 
     List<SpartanEntity> findAllByFirstNameIsNotNull();
+    List<SpartanEntity> findAllByCourseId(Integer courseId);
 }
