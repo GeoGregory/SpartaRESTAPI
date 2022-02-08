@@ -24,7 +24,7 @@ public class SpartanController {
 
     @GetMapping("/spartans")
     public CollectionModel<SpartanEntity> getSpartans(){
-        return CollectionModel.of(repository.findAllByFirstnameIsNotNull());
+        return CollectionModel.of(repository.findAllByFirstNameIsNotNull());
     }
 
     @PostMapping("/spartans")
@@ -63,7 +63,7 @@ public class SpartanController {
             }
             if(checkSpartan(updatedSpartan)) {
                 if(updatedSpartan.getCourseEndDate() == null) {
-                    if( Integer.parseInt(updatedSpartan.getCourseId()) == 6) {
+                    if( updatedSpartan.getCourseId() == 6) {
                         return new ResponseEntity<>(calculateEndDate(updatedSpartan, 5), HttpStatus.OK);
                     } else {
                         return new ResponseEntity<>(calculateEndDate(updatedSpartan, 8), HttpStatus.OK);
