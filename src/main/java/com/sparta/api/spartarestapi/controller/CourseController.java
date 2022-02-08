@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 import javax.xml.bind.ValidationException;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.sparta.api.spartarestapi.controller.SpartanController.getSpartanEntity;
@@ -61,6 +62,26 @@ public class CourseController {
             return repository.save(course);
         }
         throw new ValidationException("Course cannot be created due to invalid input");
+    }
+    @GetMapping("/courses/isActive")
+    public CollectionModel<CourseEntity> getActiveCourses(){
+        List<CourseEntity> activeCourse = new ArrayList<>();
+        for (CourseEntity course : repository.findAllByCourseNameIsNotNull()){
+            if(course.getActive()){
+                activeCourse.add(course);
+            }
+        }
+        return CollectionModel.of(activeCourse);
+    }
+    @GetMapping("/courses/nonActive")
+    public CollectionModel<CourseEntity> getNonActiveCourses(){
+        List<CourseEntity> nonActiveCourse = new ArrayList<>();
+        for (CourseEntity course : repository.findAllByCourseNameIsNotNull()){
+            if(!course.getActive()){
+                nonActiveCourse.add(course);
+            }
+        }
+        return CollectionModel.of(nonActiveCourse);
     }
 
     @PutMapping("/courses")
