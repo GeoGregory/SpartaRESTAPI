@@ -4,10 +4,9 @@ import com.sparta.api.spartarestapi.entities.SpartanEntity;
 import com.sparta.api.spartarestapi.repositories.SpartanRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import javax.xml.bind.ValidationException;
 import java.time.LocalDate;
@@ -44,6 +43,41 @@ public class SpartanController {
             }
         }
         throw new ValidationException("Spartan cannot be created due to invalid details");
+    }
+
+    @PutMapping("/spartans")
+    public ResponseEntity<SpartanEntity> updateSpartan(@RequestBody SpartanEntity updatedSpartan) throws ValidationException {
+        if(repository.findById(updatedSpartan.getId()).isPresent()) {
+            SpartanEntity spartan = repository.findById(updatedSpartan.getId()).orElseThrow();
+            if(updatedSpartan.getFirstname() == null) {
+                updatedSpartan.setFirstname(spartan.getFirstname());
+            }
+            if(updatedSpartan.getLastName() == null) {
+                updatedSpartan.setLastName(spartan.getLastName());
+            }
+            if(updatedSpartan.getCourseId() == null) {
+                updatedSpartan.setCourseId(spartan.getCourseId());
+            }
+            if(updatedSpartan.getCourseStartDate() == null) {
+                updatedSpartan.setCourseStartDate(spartan.getCourseStartDate());
+            }
+            if(checkSpartan(updatedSpartan)) {
+                if(updatedSpartan.getCourseEndDate() == null) {
+                    if( Integer.parseInt(updatedSpartan.getCourseId()) == 6) {
+                        return new ResponseEntity<>(calculateEndDate(updatedSpartan, 5), HttpStatus.OK);
+                    } else {
+                        return new ResponseEntity<>(calculateEndDate(updatedSpartan, 8), HttpStatus.OK);
+                    }
+                } else {
+                    if(LocalDate.parse(spartan.getCourseEndDate()).isBefore(LocalDate.of(2050,12,31))) {
+                        return new ResponseEntity<>(repository.save(updatedSpartan), HttpStatus.OK);
+                    } else {
+                        throw new ValidationException("Spartan cannot be created due to invalid details");
+                    }
+                }
+            }
+        }
+        return new ResponseEntity<>(updatedSpartan, HttpStatus.BAD_REQUEST);
     }
 
     private SpartanEntity calculateEndDate(SpartanEntity spartan, int weeksToAdd) throws ValidationException {
