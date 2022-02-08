@@ -3,16 +3,31 @@ package com.sparta.api.spartarestapi.controller;
 import com.sparta.api.spartarestapi.entities.CourseEntity;
 import com.sparta.api.spartarestapi.entities.SpartanEntity;
 import com.sparta.api.spartarestapi.repositories.CourseRepository;
+import com.sparta.api.spartarestapi.factories.SpartansFactory;
 import com.sparta.api.spartarestapi.repositories.SpartanRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import java.util.Map;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.swing.text.html.parser.Entity;
 import javax.xml.bind.ValidationException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+
 
 @RestController
 public class SpartanController {
@@ -27,13 +42,32 @@ public class SpartanController {
     }
 
     @GetMapping("/spartans")
-    public CollectionModel<SpartanEntity> getSpartans(){
-        return CollectionModel.of(repository.findAllByFirstNameIsNotNull());
+    @ResponseBody
+    public CollectionModel<EntityModel<SpartanEntity>> getSpartans(@RequestParam Map<String, String> allParams) throws ValidationException {
+            SpartansFactory spartanFactory = new SpartansFactory(repository);
+            return spartanFactory.getSpartans(allParams);
+    }
+
+
+    @DeleteMapping("/spartans/{id}")
+    public ResponseEntity<?> deleteSpartan(@PathVariable("id") String id) {
+        repository.deleteById(id);
+
+        return ResponseEntity.noContent().build();
+
+    }
+
+    @GetMapping("spartans/{id}")
+    public EntityModel<SpartanEntity> findSpartanById(@PathVariable("id") String id) {
+        SpartanEntity spartanEntity = repository.findById(id).orElseThrow();
+        return EntityModel.of(spartanEntity,
+                Link.of("http://localhost:8080/courses/" + spartanEntity.getCourseId()).withRel("course")
+        );
+
     }
 
     @PostMapping("/spartans")
     public SpartanEntity addSpartan(@RequestBody SpartanEntity spartan) throws ValidationException {
-
         if (spartan.getFirstName() != null && spartan.getLastName() != null
                 && spartan.getCourseStartDate() != null && spartan.getCourseId() != null) {
             if(checkSpartan(spartan)){
@@ -102,4 +136,5 @@ public class SpartanController {
                 && spartan.getCourseId() > 0
                 && spartan.getCourseId() < courseRepository.findAllByCourseNameIsNotNull().size();
     }
+
 }
