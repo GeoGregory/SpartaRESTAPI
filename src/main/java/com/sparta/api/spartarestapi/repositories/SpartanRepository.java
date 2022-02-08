@@ -14,4 +14,5 @@ public interface SpartanRepository extends MongoRepository <SpartanEntity, Strin
     List<SpartanEntity> findAllByCourseId(Integer courseId);
     List<SpartanEntity> findAllByFirstNameContainsIgnoreCase(String firstName);
     List<SpartanEntity> findAllByLastNameContainsIgnoreCase(String lastName);
+
 }

@@ -11,6 +11,7 @@ import java.util.Objects;
 @Document("SpartaDatabase")
 public class CourseEntity {
     @Id
+    private String id;
     @Field("course_id")
     private Integer courseId;
     @Field("course_name")

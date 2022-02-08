@@ -50,6 +50,7 @@ public class SpartanController {
         repository.deleteById(id);
 
         return ResponseEntity.noContent().build();
+
     }
 
     @PostMapping("/spartans")
@@ -60,7 +61,9 @@ public class SpartanController {
 
             if(checkSpartan(spartan)){
 
-                if(spartan.getCourseId() == 6) {
+
+                if( spartan.getCourseId() == 6) {
+
                     return calculateEndDate(spartan, 5);
                 } else {
                     return calculateEndDate(spartan, 8);
