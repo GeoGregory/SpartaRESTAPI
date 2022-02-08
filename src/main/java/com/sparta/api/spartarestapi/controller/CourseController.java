@@ -35,14 +35,26 @@ public class CourseController {
         return CollectionModel.of(repository.findAllByCourseNameIsNotNull());
     }
 
-    @GetMapping("courses/{id}")
-    public EntityModel<CourseEntity> findCourseById(@PathVariable("id") Integer id) {
-        //add exception
-        CourseEntity courseEntity = repository.findById(String.valueOf(id)).orElseThrow();
-        return EntityModel.of(courseEntity
 
-        );
-
+    @GetMapping("courses/isActive")
+    public CollectionModel<CourseEntity> getActiveCourses(){
+        List<CourseEntity> activeCourses = new ArrayList<>();
+        for(CourseEntity course : repository.findAllByCourseNameIsNotNull()){
+            if(course.getActive()){
+                activeCourses.add(course);
+            }
+        }
+        return CollectionModel.of(activeCourses);
+    }
+    @GetMapping("courses/nonActive")
+    public CollectionModel<CourseEntity> getNonActiveCourses(){
+        List<CourseEntity> nonActiveCourses = new ArrayList<>();
+        for(CourseEntity course : repository.findAllByCourseNameIsNotNull()){
+            if(!course.getActive()){
+                nonActiveCourses.add(course);
+            }
+        }
+        return CollectionModel.of(nonActiveCourses);
     }
 
     @PostMapping("/courses")
