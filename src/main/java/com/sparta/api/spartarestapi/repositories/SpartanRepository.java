@@ -9,5 +9,5 @@ import java.util.List;
 @Repository
 public interface SpartanRepository extends MongoRepository <SpartanEntity, String> {
 
-    List<SpartanEntity> findAllByFirstnameIsNotNull();
+    List<SpartanEntity> findAllByFirstNameIsNotNull();
 }

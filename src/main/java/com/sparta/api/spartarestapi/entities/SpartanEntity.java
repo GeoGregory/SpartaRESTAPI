@@ -8,15 +8,14 @@ import org.springframework.data.mongodb.core.mapping.Field;
 import java.time.LocalDate;
 import java.util.Objects;
 
-@Document("SpartanDB")
+@Document("SpartaDatabase")
 public class SpartanEntity {
     @Id
     private String id;
     private String courseEndDate;
     private String courseStartDate;
-    @Field("course_id")
     private Integer courseId;
-    private String firstname;
+    private String firstName;
     private String lastName;
 
     public String getId() {
@@ -52,11 +51,11 @@ public class SpartanEntity {
     }
 
     public String getFirstname() {
-        return firstname;
+        return firstName;
     }
 
     public void setFirstname(String firstname) {
-        this.firstname = firstname;
+        this.firstName = firstname;
     }
 
     public String getLastName() {
@@ -72,11 +71,11 @@ public class SpartanEntity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SpartanEntity that = (SpartanEntity) o;
-        return Objects.equals(id, that.id) && Objects.equals(courseEndDate, that.courseEndDate) && Objects.equals(courseStartDate, that.courseStartDate) && Objects.equals(courseId, that.courseId) && Objects.equals(firstname, that.firstname) && Objects.equals(lastName, that.lastName);
+        return Objects.equals(id, that.id) && Objects.equals(courseEndDate, that.courseEndDate) && Objects.equals(courseStartDate, that.courseStartDate) && Objects.equals(courseId, that.courseId) && Objects.equals(firstName, that.firstName) && Objects.equals(lastName, that.lastName);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, courseEndDate, courseStartDate, courseId, firstname, lastName);
+        return Objects.hash(id, courseEndDate, courseStartDate, courseId, firstName, lastName);
     }
 }

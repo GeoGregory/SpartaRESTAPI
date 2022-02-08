@@ -8,7 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.util.Objects;
 
-@Document("SpartanDB")
+@Document("SpartaDatabase")
 public class CourseEntity {
     @Id
     private String id;
