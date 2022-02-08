@@ -34,10 +34,7 @@ public class SpartanController {
         if (spartan.getFirstname() != null && spartan.getLastName() != null
                 && spartan.getCourseStartDate() != null && spartan.getCourseId() != null) {
 
-            if(spartan.getFirstname().length() <= 100 && spartan.getLastName().length() <= 100
-                    && LocalDate.parse(spartan.getCourseStartDate()).isAfter(LocalDate.of(2022,1,1))
-                    && Integer.parseInt(spartan.getCourseId()) > 0
-                    && Integer.parseInt(spartan.getCourseId()) < 7){
+            if(checkSpartan(spartan)){
 
                 if( Integer.parseInt(spartan.getCourseId()) == 6) {
                     return calculateEndDate(spartan, 5);
@@ -49,10 +46,22 @@ public class SpartanController {
         throw new ValidationException("Spartan cannot be created due to invalid details");
     }
 
-    private SpartanEntity calculateEndDate(SpartanEntity spartan, int weeksToAdd) {
+    private SpartanEntity calculateEndDate(SpartanEntity spartan, int weeksToAdd) throws ValidationException {
         String endDate = LocalDate.parse(spartan.getCourseStartDate()).plusWeeks(weeksToAdd)
                 .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         spartan.setCourseEndDate(String.valueOf(LocalDate.parse(endDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"))));
-        return repository.save(spartan);
+        if( LocalDate.parse(spartan.getCourseEndDate()).isBefore(LocalDate.of(2050,12,31))) {
+            return repository.save(spartan);
+        }
+        else {
+            throw new ValidationException("Spartan cannot be created due to invalid details");
+        }
+    }
+
+    private boolean checkSpartan(SpartanEntity spartan) {
+        return spartan.getFirstname().length() <= 100 && spartan.getLastName().length() <= 100
+                && LocalDate.parse(spartan.getCourseStartDate()).isAfter(LocalDate.of(2022,1,1))
+                && Integer.parseInt(spartan.getCourseId()) > 0
+                && Integer.parseInt(spartan.getCourseId()) < 7;
     }
 }
