@@ -10,4 +10,5 @@ import java.util.Optional;
 public interface CourseRepository extends MongoRepository <CourseEntity, String> {
     List<CourseEntity> findAllByCourseNameIsNotNull();
     Optional<CourseEntity> findByCourseId(Integer courseId);
+    List<CourseEntity> findAllByCourseNameContainsIgnoreCase(String courseName);
 }

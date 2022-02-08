@@ -13,7 +13,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
-
 import javax.xml.bind.ValidationException;
 import java.util.List;
 
@@ -32,7 +31,13 @@ public class CourseController {
     }
 
     @GetMapping("/courses")
-    public CollectionModel<CourseEntity> getCourses(){
+    @ResponseBody
+    public CollectionModel<CourseEntity> getCourses(@RequestParam(required = false, value = "name") String courseName){
+        if(courseName!=null){
+            return CollectionModel.of(
+                    repository.findAllByCourseNameContainsIgnoreCase(courseName)
+            );
+        }
         return CollectionModel.of(repository.findAllByCourseNameIsNotNull());
     }
 
