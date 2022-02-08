@@ -2,7 +2,7 @@ package com.sparta.api.spartarestapi.entities;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
+
 import java.util.Objects;
 
 @Document("SpartaDatabase")
@@ -47,11 +47,11 @@ public class SpartanEntity {
         this.courseId = courseId;
     }
 
-    public String getFirstname() {
+    public String getFirstName() {
         return firstName;
     }
 
-    public void setFirstname(String firstname) {
+    public void setFirstName(String firstname) {
         this.firstName = firstname;
     }
 
