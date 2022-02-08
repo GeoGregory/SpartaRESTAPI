@@ -5,6 +5,9 @@ import com.sparta.api.spartarestapi.factories.SpartansFactory;
 import com.sparta.api.spartarestapi.repositories.SpartanRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
@@ -18,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.swing.text.html.parser.Entity;
 import javax.xml.bind.ValidationException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -35,13 +39,9 @@ public class SpartanController {
 
     @GetMapping("/spartans")
     @ResponseBody
-    public CollectionModel<SpartanEntity> getSpartans(@RequestParam Map<String, String> allParams){
-        if (allParams.isEmpty())
-            return CollectionModel.of(repository.findAllByFirstNameIsNotNull());
-        else{
+    public CollectionModel<EntityModel<SpartanEntity>> getSpartans(@RequestParam Map<String, String> allParams) throws ValidationException {
             SpartansFactory spartanFactory = new SpartansFactory(repository);
             return spartanFactory.getSpartans(allParams);
-        }
     }
 
 
@@ -50,6 +50,15 @@ public class SpartanController {
         repository.deleteById(id);
 
         return ResponseEntity.noContent().build();
+
+    }
+
+    @GetMapping("spartans/{id}")
+    public EntityModel<SpartanEntity> findSpartanById(@PathVariable("id") String id) {
+        SpartanEntity spartanEntity = repository.findById(id).orElseThrow();
+        return EntityModel.of(spartanEntity,
+                Link.of("http://localhost:8080/courses/" + spartanEntity.getCourseId()).withRel("course")
+        );
 
     }
 

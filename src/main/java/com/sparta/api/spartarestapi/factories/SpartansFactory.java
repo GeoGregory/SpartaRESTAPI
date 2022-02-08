@@ -1,13 +1,21 @@
 package com.sparta.api.spartarestapi.factories;
 
+import com.sparta.api.spartarestapi.controller.SpartanController;
 import com.sparta.api.spartarestapi.entities.SpartanEntity;
 import com.sparta.api.spartarestapi.repositories.SpartanRepository;
 import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
 
+import javax.xml.bind.ValidationException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.List;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 public class SpartansFactory {
     private final SpartanRepository spartanRepository;
@@ -16,12 +24,12 @@ public class SpartansFactory {
         this.spartanRepository = spartanRepository;
     }
 
-    public CollectionModel<SpartanEntity> getSpartans(Map<String, String> spartansParameters){
+    public CollectionModel<EntityModel<SpartanEntity>> getSpartans(Map<String, String> spartansParameters) throws ValidationException {
         // below if statement may be redundant
         if(spartansParameters.isEmpty()){
-            return CollectionModel.of(spartanRepository.findAll());
+            return CollectionModel.of(getEntityModelList(spartanRepository.findAllByFirstNameIsNotNull()));
         }
-        List<SpartanEntity> allSpartans = spartanRepository.findAll();
+        List<SpartanEntity> allSpartans = spartanRepository.findAllByFirstNameIsNotNull();
 
 
         if(spartansParameters.get("firstName")!=null){
@@ -99,8 +107,19 @@ public class SpartansFactory {
             }
         }
         
-        return CollectionModel.of(allSpartans);
+        return CollectionModel.of(getEntityModelList(allSpartans));
         
+    }
+
+    private List<EntityModel<SpartanEntity>> getEntityModelList(List<SpartanEntity> spartanEntities) throws ValidationException {
+        EntityModel<SpartanEntity>[] entityModels = new EntityModel[spartanEntities.size()];
+        for (int i = 0; i < spartanEntities.size(); i++) {
+            Link[] links = new Link[2];
+            links[0] = Link.of("http://localhost:8080/courses/" + spartanEntities.get(i).getCourseId()).withRel("course");
+            links[1] = linkTo(methodOn(SpartanController.class).findSpartanById(spartanEntities.get(i).getId())).withSelfRel();
+           entityModels[i] = EntityModel.of(spartanEntities.get(i), links);
+        }
+        return Arrays.stream(entityModels).toList();
     }
 }
 
