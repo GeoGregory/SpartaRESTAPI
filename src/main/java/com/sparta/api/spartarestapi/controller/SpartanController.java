@@ -55,6 +55,7 @@ public class SpartanController {
 
     @GetMapping("spartans/{id}")
     public EntityModel<SpartanEntity> findSpartanById(@PathVariable("id") String id) {
+        //add exception
         SpartanEntity spartanEntity = repository.findById(id).orElseThrow();
         return EntityModel.of(spartanEntity,
                 Link.of("http://localhost:8080/courses/" + spartanEntity.getCourseId()).withRel("course")

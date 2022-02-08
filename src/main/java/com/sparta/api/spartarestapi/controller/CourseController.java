@@ -1,13 +1,13 @@
 package com.sparta.api.spartarestapi.controller;
 
 import com.sparta.api.spartarestapi.entities.CourseEntity;
+import com.sparta.api.spartarestapi.entities.SpartanEntity;
 import com.sparta.api.spartarestapi.repositories.CourseRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
+import org.springframework.web.bind.annotation.*;
 
 import javax.xml.bind.ValidationException;
 
@@ -26,6 +26,16 @@ public class CourseController {
         return CollectionModel.of(repository.findAllByCourseNameIsNotNull());
     }
 
+    @GetMapping("courses/{id}")
+    public EntityModel<CourseEntity> findCourseById(@PathVariable("id") Integer id) {
+        //add exception
+        CourseEntity courseEntity = repository.findById(String.valueOf(id)).orElseThrow();
+        return EntityModel.of(courseEntity
+
+        );
+
+    }
+
     @PostMapping("/courses")
     public CourseEntity addCourse(@RequestBody CourseEntity course) throws ValidationException {
 
@@ -38,4 +48,6 @@ public class CourseController {
 
         throw new ValidationException("Course cannot be created due to invalid input");
     }
+
+
 }
