@@ -57,6 +57,7 @@ public class SpartanController {
         return ResponseEntity.noContent().build();
     }
 
+
     @PostMapping("/spartans")
     public SpartanEntity addSpartan(@RequestBody SpartanEntity spartan) throws ValidationException {
 
@@ -128,4 +129,5 @@ public class SpartanController {
                 && Integer.parseInt(spartan.getCourseId()) > 0
                 && Integer.parseInt(spartan.getCourseId()) < 7;
     }
+
 }
