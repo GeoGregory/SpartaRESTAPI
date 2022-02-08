@@ -5,6 +5,7 @@ import com.sparta.api.spartarestapi.factories.SpartansFactory;
 import com.sparta.api.spartarestapi.repositories.SpartanRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
@@ -18,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.swing.text.html.parser.Entity;
 import javax.xml.bind.ValidationException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -35,13 +37,9 @@ public class SpartanController {
 
     @GetMapping("/spartans")
     @ResponseBody
-    public CollectionModel<SpartanEntity> getSpartans(@RequestParam Map<String, String> allParams){
-        if (allParams.isEmpty())
-            return CollectionModel.of(repository.findAllByFirstNameIsNotNull());
-        else{
+    public CollectionModel<EntityModel<SpartanEntity>> getSpartans(@RequestParam Map<String, String> allParams) throws ValidationException {
             SpartansFactory spartanFactory = new SpartansFactory(repository);
             return spartanFactory.getSpartans(allParams);
-        }
     }
 
 
