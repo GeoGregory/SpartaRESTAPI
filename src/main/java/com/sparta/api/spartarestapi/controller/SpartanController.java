@@ -48,11 +48,4 @@ public class SpartanController {
 
         return ResponseEntity.noContent().build();
     }
-
-    @DeleteMapping("/spartans/{id}")
-    public ResponseEntity<?> deleteSpartan(@PathVariable("id") String id) {
-        repository.deleteById(id);
-
-        return ResponseEntity.noContent().build();
-    }
 }
