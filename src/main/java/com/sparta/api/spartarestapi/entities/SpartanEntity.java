@@ -10,7 +10,7 @@ public class SpartanEntity {
     @Id
     private String id;
     private String courseEndDate;
-    private String  courseStartDate;
+    private String courseStartDate;
     @Field("course_id")
     private String courseId;
     private String firstname;
