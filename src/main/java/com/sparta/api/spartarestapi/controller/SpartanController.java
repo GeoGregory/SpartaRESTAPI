@@ -2,6 +2,8 @@ package com.sparta.api.spartarestapi.controller;
 
 import com.sparta.api.spartarestapi.entities.CourseEntity;
 import com.sparta.api.spartarestapi.entities.SpartanEntity;
+import com.sparta.api.spartarestapi.exceptions.CourseNotFoundException;
+import com.sparta.api.spartarestapi.exceptions.SpartanNotFoundException;
 import com.sparta.api.spartarestapi.repositories.CourseRepository;
 import com.sparta.api.spartarestapi.factories.SpartansFactory;
 import com.sparta.api.spartarestapi.repositories.SpartanRepository;
@@ -59,7 +61,8 @@ public class SpartanController {
 
     @GetMapping("spartans/{id}")
     public EntityModel<SpartanEntity> findSpartanById(@PathVariable("id") String id) {
-        SpartanEntity spartanEntity = repository.findById(id).orElseThrow();
+        //add exception
+        SpartanEntity spartanEntity = repository.findById(id).orElseThrow(() -> new SpartanNotFoundException(id));
         return EntityModel.of(spartanEntity,
                 Link.of("http://localhost:8080/courses/" + spartanEntity.getCourseId()).withRel("course")
         );

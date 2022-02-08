@@ -2,15 +2,19 @@ package com.sparta.api.spartarestapi.controller;
 
 import com.sparta.api.spartarestapi.entities.CourseEntity;
 import com.sparta.api.spartarestapi.entities.SpartanEntity;
+import com.sparta.api.spartarestapi.exceptions.CourseNotFoundException;
 import com.sparta.api.spartarestapi.repositories.CourseRepository;
 import com.sparta.api.spartarestapi.repositories.SpartanRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 import javax.xml.bind.ValidationException;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.sparta.api.spartarestapi.controller.SpartanController.getSpartanEntity;
@@ -28,8 +32,25 @@ public class CourseController {
     }
 
     @GetMapping("/courses")
-    public CollectionModel<CourseEntity> getCourses(){
+    @ResponseBody
+    public CollectionModel<CourseEntity> getCourses(@RequestParam(required = false, value = "name") String courseName){
+        if(courseName!=null){
+            return CollectionModel.of(
+                    repository.findAllByCourseNameContainsIgnoreCase(courseName)
+            );
+        }
         return CollectionModel.of(repository.findAllByCourseNameIsNotNull());
+    }
+
+    @GetMapping("/courses/{courseId}")
+    public EntityModel<CourseEntity> findCourseById(@PathVariable("courseId") Integer courseId){
+        Link[] links = new Link[spartanRepository.findAllByCourseId(courseId).size()];
+        CourseEntity courseEntity = repository.findByCourseId(courseId).orElseThrow(() -> new CourseNotFoundException(courseId));
+        for (int i = 0; i < links.length; i++) {
+            links[i] = linkTo(methodOn(SpartanController.class).findSpartanById(spartanRepository.
+                    findAllByCourseId(courseId).get(i).getId())).withRel("Spartan");
+        }
+        return EntityModel.of(courseEntity, links);
     }
 
     @PostMapping("/courses")
@@ -41,6 +62,26 @@ public class CourseController {
             return repository.save(course);
         }
         throw new ValidationException("Course cannot be created due to invalid input");
+    }
+    @GetMapping("/courses/isActive")
+    public CollectionModel<CourseEntity> getActiveCourses(){
+        List<CourseEntity> activeCourse = new ArrayList<>();
+        for (CourseEntity course : repository.findAllByCourseNameIsNotNull()){
+            if(course.getActive()){
+                activeCourse.add(course);
+            }
+        }
+        return CollectionModel.of(activeCourse);
+    }
+    @GetMapping("/courses/nonActive")
+    public CollectionModel<CourseEntity> getNonActiveCourses(){
+        List<CourseEntity> nonActiveCourse = new ArrayList<>();
+        for (CourseEntity course : repository.findAllByCourseNameIsNotNull()){
+            if(!course.getActive()){
+                nonActiveCourse.add(course);
+            }
+        }
+        return CollectionModel.of(nonActiveCourse);
     }
 
     @PutMapping("/courses")
