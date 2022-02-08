@@ -37,7 +37,7 @@ public class SpartanController {
     @ResponseBody
     public CollectionModel<SpartanEntity> getSpartans(@RequestParam Map<String, String> allParams){
         if (allParams.isEmpty())
-            return CollectionModel.of(repository.findAllByFirstnameIsNotNull());
+            return CollectionModel.of(repository.findAllByFirstNameIsNotNull());
         else{
             SpartansFactory spartanFactory = new SpartansFactory(repository);
             return spartanFactory.getSpartans(allParams);
@@ -60,7 +60,7 @@ public class SpartanController {
 
             if(checkSpartan(spartan)){
 
-                if( Integer.parseInt(spartan.getCourseId()) == 6) {
+                if(spartan.getCourseId() == 6) {
                     return calculateEndDate(spartan, 5);
                 } else {
                     return calculateEndDate(spartan, 8);
@@ -88,7 +88,7 @@ public class SpartanController {
             }
             if(checkSpartan(updatedSpartan)) {
                 if(updatedSpartan.getCourseEndDate() == null) {
-                    if( Integer.parseInt(updatedSpartan.getCourseId()) == 6) {
+                    if( updatedSpartan.getCourseId() == 6) {
                         return new ResponseEntity<>(calculateEndDate(updatedSpartan, 5), HttpStatus.OK);
                     } else {
                         return new ResponseEntity<>(calculateEndDate(updatedSpartan, 8), HttpStatus.OK);
@@ -120,8 +120,8 @@ public class SpartanController {
     private boolean checkSpartan(SpartanEntity spartan) {
         return spartan.getFirstname().length() <= 100 && spartan.getLastName().length() <= 100
                 && LocalDate.parse(spartan.getCourseStartDate()).isAfter(LocalDate.of(2022,1,1))
-                && Integer.parseInt(spartan.getCourseId()) > 0
-                && Integer.parseInt(spartan.getCourseId()) < 7;
+                && spartan.getCourseId() > 0
+                && spartan.getCourseId() < 7;
     }
 
 }

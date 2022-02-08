@@ -25,11 +25,11 @@ public class SpartansFactory {
 
 
         if(spartansParameters.get("firstName")!=null){
-            List<SpartanEntity> spartansByFirstName = spartanRepository.findAllByFirstnameContains(spartansParameters.get("firstName"));
+            List<SpartanEntity> spartansByFirstName = spartanRepository.findAllByFirstNameContainsIgnoreCase(spartansParameters.get("firstName"));
             allSpartans.retainAll(spartansByFirstName);
         }
         if (spartansParameters.get("lastName") != null){
-            List<SpartanEntity> spartansByLastName = spartanRepository.findAllByLastNameContains(spartansParameters.get("lastName"));
+            List<SpartanEntity> spartansByLastName = spartanRepository.findAllByLastNameContainsIgnoreCase(spartansParameters.get("lastName"));
             allSpartans.retainAll(spartansByLastName);
         }
         if (spartansParameters.get("date") !=null && spartansParameters.get("beforeAfter") != null && spartansParameters.get("startEnd") != null){

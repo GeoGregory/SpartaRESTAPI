@@ -8,22 +8,22 @@ import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.util.Objects;
 
-@Document("SpartanDB")
+@Document("SpartaDatabase")
 public class CourseEntity {
     @Id
     @Field("course_id")
-    private String courseId;
+    private Integer courseId;
     @Field("course_name")
     private String courseName;
     private String description;
     private Boolean isActive;
     private Integer length;
 
-    public String getCourseId() {
+    public Integer getCourseId() {
         return courseId;
     }
 
-    public void setCourseId(String courseId) {
+    public void setCourseId(Integer courseId) {
         this.courseId = courseId;
     }
 

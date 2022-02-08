@@ -10,14 +10,8 @@ import java.util.List;
 @Repository
 public interface SpartanRepository extends MongoRepository <SpartanEntity, String> {
 
-    List<SpartanEntity> findAllByFirstnameIsNotNull();
+    List<SpartanEntity> findAllByFirstNameIsNotNull();
     List<SpartanEntity> findAllByCourseId(Integer courseId);
-    List<SpartanEntity> findAllByFirstnameContains(String firstName);
-    List<SpartanEntity> findAllByLastNameContains(String lastName);
-    List<SpartanEntity> findAllByCourseEndDateIsBefore(LocalDate courseEndDate);
-    List<SpartanEntity> findAllByCourseEndDateIsAfter(LocalDate courseEndDate);
-    List<SpartanEntity> findAllByCourseStartDateIsBefore(LocalDate courseStartDate);
-    List<SpartanEntity> findAllByCourseStartDateIsAfter(LocalDate courseStartDate);
-    List<SpartanEntity> findAllByCourseStartDate(LocalDate courseStartDate);
-    List<SpartanEntity> findAllByCourseEndDate(LocalDate courseStartDate);
+    List<SpartanEntity> findAllByFirstNameContainsIgnoreCase(String firstName);
+    List<SpartanEntity> findAllByLastNameContainsIgnoreCase(String lastName);
 }
