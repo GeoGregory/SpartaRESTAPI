@@ -115,8 +115,8 @@ public class SpartansFactory {
         EntityModel<SpartanEntity>[] entityModels = new EntityModel[spartanEntities.size()];
         for (int i = 0; i < spartanEntities.size(); i++) {
             Link[] links = new Link[2];
-            links[1] = Link.of("http://localhost:8080/courses/" + spartanEntities.get(i).getCourseId()).withRel("course");
-            links[2] = linkTo(methodOn(SpartanController.class).findSpartanById).withSelfRel();
+            links[0] = Link.of("http://localhost:8080/courses/" + spartanEntities.get(i).getCourseId()).withRel("course");
+            links[1] = linkTo(methodOn(SpartanController.class).findSpartanById(spartanEntities.get(i).getId())).withSelfRel();
            entityModels[i] = EntityModel.of(spartanEntities.get(i), links);
         }
         return Arrays.stream(entityModels).toList();

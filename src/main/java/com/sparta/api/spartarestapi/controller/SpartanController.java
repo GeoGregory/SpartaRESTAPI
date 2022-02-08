@@ -6,6 +6,8 @@ import com.sparta.api.spartarestapi.repositories.SpartanRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
@@ -48,6 +50,15 @@ public class SpartanController {
         repository.deleteById(id);
 
         return ResponseEntity.noContent().build();
+
+    }
+
+    @GetMapping("spartans/{id}")
+    public EntityModel<SpartanEntity> findSpartanById(@PathVariable("id") String id) {
+        SpartanEntity spartanEntity = repository.findById(id).orElseThrow();
+        return EntityModel.of(spartanEntity,
+                Link.of("http://localhost:8080/courses/" + spartanEntity.getCourseId()).withRel("course")
+        );
 
     }
 
