@@ -3,17 +3,14 @@ package com.sparta.api.spartarestapi.entities;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
-
-
-import java.time.LocalDate;
 import java.util.Objects;
 
 @Document("SpartanDB")
 public class SpartanEntity {
     @Id
     private String id;
-    private LocalDate courseEndDate;
-    private LocalDate courseStartDate;
+    private String courseEndDate;
+    private String courseStartDate;
     @Field("course_id")
     private String courseId;
     private String firstname;
@@ -27,19 +24,19 @@ public class SpartanEntity {
         this.id = id;
     }
 
-    public LocalDate getCourseEndDate() {
+    public String getCourseEndDate() {
         return courseEndDate;
     }
 
-    public void setCourseEndDate(LocalDate courseEndDate) {
+    public void setCourseEndDate(String courseEndDate) {
         this.courseEndDate = courseEndDate;
     }
 
-    public LocalDate getCourseStartDate() {
+    public String getCourseStartDate() {
         return courseStartDate;
     }
 
-    public void setCourseStartDate(LocalDate courseStartDate) {
+    public void setCourseStartDate(String courseStartDate) {
         this.courseStartDate = courseStartDate;
     }
 

@@ -12,6 +12,13 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import javax.xml.bind.ValidationException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 
 @RestController
@@ -42,10 +49,85 @@ public class SpartanController {
     }
 
 
+
     @DeleteMapping("/spartans/{id}")
     public ResponseEntity<?> deleteSpartan(@PathVariable("id") String id) {
         repository.deleteById(id);
 
         return ResponseEntity.noContent().build();
     }
+
+
+    @PostMapping("/spartans")
+    public SpartanEntity addSpartan(@RequestBody SpartanEntity spartan) throws ValidationException {
+
+        if (spartan.getFirstname() != null && spartan.getLastName() != null
+                && spartan.getCourseStartDate() != null && spartan.getCourseId() != null) {
+
+            if(checkSpartan(spartan)){
+
+                if( Integer.parseInt(spartan.getCourseId()) == 6) {
+                    return calculateEndDate(spartan, 5);
+                } else {
+                    return calculateEndDate(spartan, 8);
+                }
+            }
+        }
+        throw new ValidationException("Spartan cannot be created due to invalid details");
+    }
+
+    @PutMapping("/spartans")
+    public ResponseEntity<SpartanEntity> updateSpartan(@RequestBody SpartanEntity updatedSpartan) throws ValidationException {
+        if(repository.findById(updatedSpartan.getId()).isPresent()) {
+            SpartanEntity spartan = repository.findById(updatedSpartan.getId()).orElseThrow();
+            if(updatedSpartan.getFirstname() == null) {
+                updatedSpartan.setFirstname(spartan.getFirstname());
+            }
+            if(updatedSpartan.getLastName() == null) {
+                updatedSpartan.setLastName(spartan.getLastName());
+            }
+            if(updatedSpartan.getCourseId() == null) {
+                updatedSpartan.setCourseId(spartan.getCourseId());
+            }
+            if(updatedSpartan.getCourseStartDate() == null) {
+                updatedSpartan.setCourseStartDate(spartan.getCourseStartDate());
+            }
+            if(checkSpartan(updatedSpartan)) {
+                if(updatedSpartan.getCourseEndDate() == null) {
+                    if( Integer.parseInt(updatedSpartan.getCourseId()) == 6) {
+                        return new ResponseEntity<>(calculateEndDate(updatedSpartan, 5), HttpStatus.OK);
+                    } else {
+                        return new ResponseEntity<>(calculateEndDate(updatedSpartan, 8), HttpStatus.OK);
+                    }
+                } else {
+                    if(LocalDate.parse(spartan.getCourseEndDate()).isBefore(LocalDate.of(2050,12,31))) {
+                        return new ResponseEntity<>(repository.save(updatedSpartan), HttpStatus.OK);
+                    } else {
+                        throw new ValidationException("Spartan cannot be created due to invalid details");
+                    }
+                }
+            }
+        }
+        return new ResponseEntity<>(updatedSpartan, HttpStatus.BAD_REQUEST);
+    }
+
+    private SpartanEntity calculateEndDate(SpartanEntity spartan, int weeksToAdd) throws ValidationException {
+        String endDate = LocalDate.parse(spartan.getCourseStartDate()).plusWeeks(weeksToAdd)
+                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        spartan.setCourseEndDate(String.valueOf(LocalDate.parse(endDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"))));
+        if( LocalDate.parse(spartan.getCourseEndDate()).isBefore(LocalDate.of(2050,12,31))) {
+            return repository.save(spartan);
+        }
+        else {
+            throw new ValidationException("Spartan cannot be created due to invalid details");
+        }
+    }
+
+    private boolean checkSpartan(SpartanEntity spartan) {
+        return spartan.getFirstname().length() <= 100 && spartan.getLastName().length() <= 100
+                && LocalDate.parse(spartan.getCourseStartDate()).isAfter(LocalDate.of(2022,1,1))
+                && Integer.parseInt(spartan.getCourseId()) > 0
+                && Integer.parseInt(spartan.getCourseId()) < 7;
+    }
+
 }
