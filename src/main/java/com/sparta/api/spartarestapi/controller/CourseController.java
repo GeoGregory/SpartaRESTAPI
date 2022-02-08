@@ -2,21 +2,20 @@ package com.sparta.api.spartarestapi.controller;
 
 import com.sparta.api.spartarestapi.entities.CourseEntity;
 import com.sparta.api.spartarestapi.entities.SpartanEntity;
+import com.sparta.api.spartarestapi.exceptions.CourseNotFoundException;
 import com.sparta.api.spartarestapi.repositories.CourseRepository;
 import com.sparta.api.spartarestapi.repositories.SpartanRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.Link;
-import org.springframework.web.bind.annotation.*;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 import javax.xml.bind.ValidationException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.function.LongUnaryOperator;
 
 import static com.sparta.api.spartarestapi.controller.SpartanController.getSpartanEntity;
 
@@ -37,26 +36,15 @@ public class CourseController {
         return CollectionModel.of(repository.findAllByCourseNameIsNotNull());
     }
 
-
-    @GetMapping("courses/isActive")
-    public CollectionModel<CourseEntity> getActiveCourses(){
-        List<CourseEntity> activeCourses = new ArrayList<>();
-        for(CourseEntity course : repository.findAllByCourseNameIsNotNull()){
-            if(course.getActive()){
-                activeCourses.add(course);
-            }
+    @GetMapping("/courses/{courseId}")
+    public EntityModel<CourseEntity> findCourseById(@PathVariable("courseId") Integer courseId){
+        Link[] links = new Link[spartanRepository.findAllByCourseId(courseId).size()];
+        CourseEntity courseEntity = repository.findByCourseId(courseId).orElseThrow(() -> new CourseNotFoundException(courseId));
+        for (int i = 0; i < links.length; i++) {
+            links[i] = linkTo(methodOn(SpartanController.class).findSpartanById(spartanRepository.
+                    findAllByCourseId(courseId).get(i).getId())).withRel("Spartan");
         }
-        return CollectionModel.of(activeCourses);
-    }
-    @GetMapping("courses/nonActive")
-    public CollectionModel<CourseEntity> getNonActiveCourses(){
-        List<CourseEntity> nonActiveCourses = new ArrayList<>();
-        for(CourseEntity course : repository.findAllByCourseNameIsNotNull()){
-            if(!course.getActive()){
-                nonActiveCourses.add(course);
-            }
-        }
-        return CollectionModel.of(nonActiveCourses);
+        return EntityModel.of(courseEntity, links);
     }
 
     @PostMapping("/courses")
@@ -99,7 +87,5 @@ public class CourseController {
             getSpartanEntity(spartan, length, spartanRepository);
         }
     }
-
-
 
 }
