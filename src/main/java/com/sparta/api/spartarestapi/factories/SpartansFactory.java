@@ -114,7 +114,7 @@ public class SpartansFactory {
     private List<EntityModel<SpartanEntity>> getEntityModelList(List<SpartanEntity> spartanEntities) throws ValidationException {
         EntityModel<SpartanEntity>[] entityModels = new EntityModel[spartanEntities.size()];
         for (int i = 0; i < spartanEntities.size(); i++) {
-            Link[] links = Link[2]
+            Link[] links = new Link[2];
             links[1] = Link.of("http://localhost:8080/courses/" + spartanEntities.get(i).getCourseId()).withRel("course");
             links[2] = linkTo(methodOn(SpartanController.class).findSpartanById).withSelfRel();
            entityModels[i] = EntityModel.of(spartanEntities.get(i), links);
