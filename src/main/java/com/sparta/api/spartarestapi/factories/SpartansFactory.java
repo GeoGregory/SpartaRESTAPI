@@ -106,6 +106,7 @@ public class SpartansFactory {
                 }
             }
         }
+
         if (spartansParameters.get("active") != null) {
             if (spartansParameters.get("active").equals("true")) {
                 for (SpartanEntity spartan : allSpartans) {
@@ -125,10 +126,10 @@ public class SpartansFactory {
                 }
                 allSpartans.retainAll(correctSpartans);
                 correctSpartans.clear();
+
             }
         }
         return CollectionModel.of(getEntityModelList(allSpartans));
-        
     }
 
     private List<EntityModel<SpartanEntity>> getEntityModelList(List<SpartanEntity> spartanEntities) throws ValidationException {

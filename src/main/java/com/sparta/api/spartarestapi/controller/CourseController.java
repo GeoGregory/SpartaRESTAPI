@@ -1,8 +1,10 @@
 package com.sparta.api.spartarestapi.controller;
 
+import com.sparta.api.spartarestapi.entities.APIKeyEntity;
 import com.sparta.api.spartarestapi.entities.CourseEntity;
 import com.sparta.api.spartarestapi.entities.SpartanEntity;
 import com.sparta.api.spartarestapi.exceptions.CourseNotFoundException;
+import com.sparta.api.spartarestapi.repositories.APIKeyRepository;
 import com.sparta.api.spartarestapi.repositories.CourseRepository;
 import com.sparta.api.spartarestapi.repositories.SpartanRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,11 +26,13 @@ public class CourseController {
 
     private final CourseRepository repository;
     private final SpartanRepository spartanRepository;
+    private final APIKeyRepository apiKeyRepository;
 
     @Autowired
-    public CourseController(CourseRepository repository, SpartanRepository spartanRepository) {
+    public CourseController(CourseRepository repository, SpartanRepository spartanRepository, APIKeyRepository apiKeyRepository) {
         this.repository = repository;
         this.spartanRepository = spartanRepository;
+        this.apiKeyRepository = apiKeyRepository;
     }
 
     @GetMapping("/courses")
@@ -48,21 +52,31 @@ public class CourseController {
         CourseEntity courseEntity = repository.findByCourseId(courseId).orElseThrow(() -> new CourseNotFoundException(courseId));
         for (int i = 0; i < links.length; i++) {
             links[i] = linkTo(methodOn(SpartanController.class).findSpartanById(spartanRepository.
-                    findAllByCourseId(courseId).get(i).getId())).withRel("Spartan");
+                    findAllByCourseId(courseId).get(i).getId())).withRel("Spartan Name : " +
+                    spartanRepository.findAllByCourseId(courseId).get(i).getFirstName() +
+                    " " +
+                    spartanRepository.findAllByCourseId(courseId).get(i).getLastName());
         }
         return EntityModel.of(courseEntity, links);
     }
 
-    @PostMapping("/courses")
-    public CourseEntity addCourse(@RequestBody CourseEntity course) throws ValidationException {
-        if (course.getCourseName() != null && course.getLength() != null
-                && course.getDescription() != null) {
-            course.setCourseId(repository.findAllByCourseNameIsNotNull().size() + 1);
-            course.setActive(true);
-            return repository.save(course);
+    @PostMapping("/courses/{apiKey}")
+    public CourseEntity addCourse(@RequestBody CourseEntity course, @PathVariable("apiKey") String apiKey) throws ValidationException {
+        List<APIKeyEntity> allKeys = apiKeyRepository.findAllByAPIKeyIsNotNull();
+        for (APIKeyEntity key: allKeys) {
+            if (key.getAPIKey().equals(apiKey)) {
+                if (course.getCourseName() != null && course.getLength() != null
+                        && course.getDescription() != null) {
+                    course.setCourseId(repository.findAllByCourseNameIsNotNull().size() + 1);
+                    course.setActive(true);
+                    return repository.save(course);
+                }
+                throw new ValidationException("Course cannot be created due to invalid input");
+            }
         }
-        throw new ValidationException("Course cannot be created due to invalid input");
+        throw new ValidationException("Invalid API Key");
     }
+
     @GetMapping("/courses/isActive")
     public CollectionModel<CourseEntity> getActiveCourses(){
         List<CourseEntity> activeCourse = new ArrayList<>();
@@ -73,38 +87,61 @@ public class CourseController {
         }
         return CollectionModel.of(activeCourse);
     }
+
     @GetMapping("/courses/nonActive")
-    public CollectionModel<CourseEntity> getNonActiveCourses(){
+    public CollectionModel<CourseEntity> getNonActiveCourses() throws ValidationException{
         List<CourseEntity> nonActiveCourse = new ArrayList<>();
         for (CourseEntity course : repository.findAllByCourseNameIsNotNull()){
             if(!course.getActive()){
                 nonActiveCourse.add(course);
             }
         }
+        if (nonActiveCourse.isEmpty()) {
+            throw new ValidationException("No non-active courses available");
+        }
         return CollectionModel.of(nonActiveCourse);
     }
 
-    @PutMapping("/courses")
-    public ResponseEntity<CourseEntity> updateCourse(@RequestBody CourseEntity updatedCourse) throws ValidationException {
-        if(repository.findById(updatedCourse.getId()).isPresent()) {
-            CourseEntity course = repository.findById(updatedCourse.getId()).orElseThrow();
-            if(updatedCourse.getCourseName() == null) {
-                updatedCourse.setCourseName(course.getCourseName());
+    @PutMapping("/courses/{apiKey}")
+    public ResponseEntity<CourseEntity> updateCourse(@RequestBody CourseEntity updatedCourse, @PathVariable("apiKey") String apiKey) throws ValidationException {
+        List<APIKeyEntity> allKeys = apiKeyRepository.findAllByAPIKeyIsNotNull();
+        for (APIKeyEntity key: allKeys) {
+            if (key.getAPIKey().equals(apiKey)) {
+                if (repository.findById(updatedCourse.getId()).isPresent()) {
+                    CourseEntity course = repository.findById(updatedCourse.getId()).orElseThrow();
+                    if (updatedCourse.getCourseName() == null) {
+                        updatedCourse.setCourseName(course.getCourseName());
+                    }
+                    if (updatedCourse.getDescription() == null) {
+                        updatedCourse.setDescription(course.getDescription());
+                    }
+                    if (updatedCourse.getActive() == null) {
+                        updatedCourse.setActive(course.getActive());
+                    }
+                    if (updatedCourse.getCourseId() == null) {
+                        updatedCourse.setCourseId(course.getCourseId());
+                    }
+                    if (updatedCourse.getLength() == null) {
+                        updatedCourse.setLength(course.getLength());
+                    } else {
+                        updateSpartanEndDate(updatedCourse.getCourseId(), updatedCourse.getLength());
+                    }
+                    return new ResponseEntity<>(repository.save(updatedCourse), HttpStatus.OK);
+                }
+                return new ResponseEntity<>(updatedCourse, HttpStatus.BAD_REQUEST);
             }
-            if(updatedCourse.getDescription() == null) {
-                updatedCourse.setDescription(course.getDescription());
-            }
-            if(updatedCourse.getLength() == null) {
-                updatedCourse.setLength(course.getLength());
-            } else {
-                updateSpartanEndDate(updatedCourse.getCourseId(), updatedCourse.getLength());
-            }
-            if(updatedCourse.getActive() == null) {
-                updatedCourse.setActive(course.getActive());
-            }
-            return new ResponseEntity<>(repository.save(updatedCourse), HttpStatus.OK);
         }
-        return new ResponseEntity<>(updatedCourse, HttpStatus.BAD_REQUEST);
+        throw new ValidationException("Invalid API Key");
+    }
+
+    @PostMapping("/courses/")
+    public void courseWithoutAPIKeyPost() throws ValidationException {
+        throw new ValidationException("Need an API Key to perform this action !!!");
+    }
+
+    @PutMapping("/courses/")
+    public void courseWithoutAPIKeyPut() throws ValidationException {
+        throw new ValidationException("Need an API Key to perform this action !!!");
     }
 
     private void updateSpartanEndDate(Integer courseId, Integer length) throws ValidationException {
