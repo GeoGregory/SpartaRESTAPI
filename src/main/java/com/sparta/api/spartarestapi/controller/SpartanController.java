@@ -167,7 +167,7 @@ public class SpartanController {
 
     private boolean checkSpartan(SpartanEntity spartan) {
         return spartan.getFirstName().length() <= 100 && spartan.getLastName().length() <= 100
-                && LocalDate.parse(spartan.getCourseStartDate()).isAfter(LocalDate.of(2022,1,1))
+                && LocalDate.parse(spartan.getCourseStartDate()).isAfter(LocalDate.of(2021,12,31))
                 && spartan.getCourseId() > 0
                 && spartan.getCourseId() < courseRepository.findAllByCourseNameIsNotNull().size();
     }
