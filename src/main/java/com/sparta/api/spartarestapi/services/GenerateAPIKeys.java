@@ -9,14 +9,12 @@ import java.util.stream.Collectors;
 public class GenerateAPIKeys {
 
     public static String generateAPIKey() {
-        String upperCaseLetters = RandomStringUtils.random(2, 65, 90, true, true);
-        String lowerCaseLetters = RandomStringUtils.random(2, 97, 122, true, true);
-        String numbers = RandomStringUtils.randomNumeric(2);
-        String specialChar = RandomStringUtils.random(2, 33, 47, false, false);
-        String totalChars = RandomStringUtils.randomAlphanumeric(2);
+        String upperCaseLetters = RandomStringUtils.random(4, 65, 90, true, true);
+        String lowerCaseLetters = RandomStringUtils.random(4, 97, 122, true, true);
+        String numbers = RandomStringUtils.randomNumeric(4);
+        String totalChars = RandomStringUtils.randomAlphanumeric(4);
         String combinedChars = upperCaseLetters.concat(lowerCaseLetters)
                 .concat(numbers)
-                .concat(specialChar)
                 .concat(totalChars);
         List<Character> pwdChars = combinedChars.chars()
                 .mapToObj(c -> (char) c)
