@@ -1,19 +1,21 @@
 package com.sparta.api.spartarestapi.controller;
 
+import com.sparta.api.spartarestapi.entities.APIKeyEntity;
 import com.sparta.api.spartarestapi.entities.CourseEntity;
 import com.sparta.api.spartarestapi.entities.SpartanEntity;
-import com.sparta.api.spartarestapi.exceptions.CourseNotFoundException;
 import com.sparta.api.spartarestapi.exceptions.SpartanNotFoundException;
+import com.sparta.api.spartarestapi.repositories.APIKeyRepository;
 import com.sparta.api.spartarestapi.repositories.CourseRepository;
 import com.sparta.api.spartarestapi.factories.SpartansFactory;
 import com.sparta.api.spartarestapi.repositories.SpartanRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 import java.util.Map;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,10 +24,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
-import javax.swing.text.html.parser.Entity;
 import javax.xml.bind.ValidationException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -36,11 +35,13 @@ public class SpartanController {
 
     private final SpartanRepository repository;
     private final CourseRepository courseRepository;
+    private final APIKeyRepository apiKeyRepository;
 
     @Autowired
-    public SpartanController(SpartanRepository repository, CourseRepository courseRepository) {
+    public SpartanController(SpartanRepository repository, CourseRepository courseRepository, APIKeyRepository apiKeyRepository) {
         this.repository = repository;
         this.courseRepository = courseRepository;
+        this.apiKeyRepository = apiKeyRepository;
     }
 
     @GetMapping("/spartans")
@@ -51,12 +52,16 @@ public class SpartanController {
     }
 
 
-    @DeleteMapping("/spartans/{id}")
-    public ResponseEntity<?> deleteSpartan(@PathVariable("id") String id) {
-        repository.deleteById(id);
-
-        return ResponseEntity.noContent().build();
-
+    @DeleteMapping("/spartans/{id}/{apiKey}")
+    public ResponseEntity<?> deleteSpartan(@PathVariable("id") String id, @PathVariable("apiKey") String apiKey) throws ValidationException {
+        List<APIKeyEntity> allKeys = apiKeyRepository.findAllByAPIKeyIsNotNull();
+        for (APIKeyEntity key: allKeys) {
+            if (key.getAPIKey().equals(apiKey)) {
+                repository.deleteById(id);
+                return ResponseEntity.noContent().build();
+            }
+        }
+        throw new ValidationException("Invalid API Key");
     }
 
     @GetMapping("spartans/{id}")
@@ -69,52 +74,64 @@ public class SpartanController {
 
     }
 
-    @PostMapping("/spartans")
-    public SpartanEntity addSpartan(@RequestBody SpartanEntity spartan) throws ValidationException {
-        if (spartan.getFirstName() != null && spartan.getLastName() != null
-                && spartan.getCourseStartDate() != null && spartan.getCourseId() != null) {
-            if(checkSpartan(spartan)){
-                CourseEntity course = courseRepository.findByCourseId(spartan.getCourseId()).orElseThrow();
-                if( spartan.getCourseId().equals(course.getCourseId())) {
-                    return calculateEndDate(spartan, course.getLength());
+    @PostMapping("/spartans/{apiKey}")
+    public SpartanEntity addSpartan(@RequestBody SpartanEntity spartan, @PathVariable("apiKey") String apiKey) throws ValidationException {
+        List<APIKeyEntity> allKeys = apiKeyRepository.findAllByAPIKeyIsNotNull();
+        for (APIKeyEntity key: allKeys) {
+            if (key.getAPIKey().equals(apiKey)) {
+                if (spartan.getFirstName() != null && spartan.getLastName() != null
+                        && spartan.getCourseStartDate() != null && spartan.getCourseId() != null) {
+                    if (checkSpartan(spartan)) {
+                        CourseEntity course = courseRepository.findByCourseId(spartan.getCourseId()).orElseThrow();
+                        if (spartan.getCourseId().equals(course.getCourseId())) {
+                            return calculateEndDate(spartan, course.getLength());
+                        }
+                    }
+                    throw new ValidationException("Spartan cannot be created due to invalid details");
                 }
             }
         }
-        throw new ValidationException("Spartan cannot be created due to invalid details");
+        throw new ValidationException("Invalid API Key");
     }
 
-    @PutMapping("/spartans")
-    public ResponseEntity<SpartanEntity> updateSpartan(@RequestBody SpartanEntity updatedSpartan) throws ValidationException {
-        if(repository.findById(updatedSpartan.getId()).isPresent()) {
-            SpartanEntity spartan = repository.findById(updatedSpartan.getId()).orElseThrow();
-            if(updatedSpartan.getFirstName() == null) {
-                updatedSpartan.setFirstName(spartan.getFirstName());
-            }
-            if(updatedSpartan.getLastName() == null) {
-                updatedSpartan.setLastName(spartan.getLastName());
-            }
-            if(updatedSpartan.getCourseId() == null) {
-                updatedSpartan.setCourseId(spartan.getCourseId());
-            }
-            if(updatedSpartan.getCourseStartDate() == null) {
-                updatedSpartan.setCourseStartDate(spartan.getCourseStartDate());
-            }
-            if(checkSpartan(updatedSpartan)) {
-                if(updatedSpartan.getCourseEndDate() == null) {
-                    CourseEntity course = courseRepository.findByCourseId(updatedSpartan.getCourseId()).orElseThrow();
-                    if( updatedSpartan.getCourseId().equals(course.getCourseId())) {
-                        return new ResponseEntity<>(calculateEndDate(updatedSpartan, course.getLength()), HttpStatus.OK);
+    @PutMapping("/spartans/{apiKey}")
+    public ResponseEntity<SpartanEntity> updateSpartan(@RequestBody SpartanEntity updatedSpartan, @PathVariable("apiKey") String apiKey) throws ValidationException {
+        List<APIKeyEntity> allKeys = apiKeyRepository.findAllByAPIKeyIsNotNull();
+        for (APIKeyEntity key: allKeys) {
+            if (key.getAPIKey().equals(apiKey)) {
+                if (repository.findById(updatedSpartan.getId()).isPresent()) {
+                    SpartanEntity spartan = repository.findById(updatedSpartan.getId()).orElseThrow();
+                    if (updatedSpartan.getFirstName() == null) {
+                        updatedSpartan.setFirstName(spartan.getFirstName());
                     }
-                } else {
-                    if(LocalDate.parse(updatedSpartan.getCourseEndDate()).isBefore(LocalDate.of(2050,12,31))) {
-                        return new ResponseEntity<>(repository.save(updatedSpartan), HttpStatus.OK);
-                    } else {
-                        throw new ValidationException("Spartan cannot be created due to invalid details");
+                    if (updatedSpartan.getLastName() == null) {
+                        updatedSpartan.setLastName(spartan.getLastName());
+                    }
+                    if (updatedSpartan.getCourseId() == null) {
+                        updatedSpartan.setCourseId(spartan.getCourseId());
+                    }
+                    if (updatedSpartan.getCourseStartDate() == null) {
+                        updatedSpartan.setCourseStartDate(spartan.getCourseStartDate());
+                    }
+                    if (checkSpartan(updatedSpartan)) {
+                        if (updatedSpartan.getCourseEndDate() == null) {
+                            CourseEntity course = courseRepository.findByCourseId(updatedSpartan.getCourseId()).orElseThrow();
+                            if (updatedSpartan.getCourseId().equals(course.getCourseId())) {
+                                return new ResponseEntity<>(calculateEndDate(updatedSpartan, course.getLength()), HttpStatus.OK);
+                            }
+                        } else {
+                            if (LocalDate.parse(updatedSpartan.getCourseEndDate()).isBefore(LocalDate.of(2050, 12, 31))) {
+                                return new ResponseEntity<>(repository.save(updatedSpartan), HttpStatus.OK);
+                            } else {
+                                throw new ValidationException("Spartan cannot be created due to invalid details");
+                            }
+                        }
                     }
                 }
+                return new ResponseEntity<>(updatedSpartan, HttpStatus.BAD_REQUEST);
             }
         }
-        return new ResponseEntity<>(updatedSpartan, HttpStatus.BAD_REQUEST);
+        throw new ValidationException("Invalid API Key");
     }
 
     private SpartanEntity calculateEndDate(SpartanEntity spartan, int weeksToAdd) throws ValidationException {
@@ -131,6 +148,21 @@ public class SpartanController {
         else {
             throw new ValidationException("Spartan cannot be created due to invalid details");
         }
+    }
+
+    @PostMapping("/spartans/")
+    public void spartanWithoutAPIKeyPost() throws ValidationException {
+        throw new ValidationException("Need an API Key to perform this action !!!");
+    }
+
+    @PutMapping("/spartans/")
+    public void spartanWithoutAPIKeyPut() throws ValidationException {
+        throw new ValidationException("Need an API Key to perform this action !!!");
+    }
+
+    @DeleteMapping("/spartans/{id}")
+    public void spartanWithoutAPIKeyPutDelete(@PathVariable("id") String id) throws ValidationException {
+        throw new ValidationException("Need an API Key to perform this action !!!");
     }
 
     private boolean checkSpartan(SpartanEntity spartan) {
