@@ -18,6 +18,18 @@ public class CourseEntity {
     private Boolean isActive;
     private Integer length;
 
+    public CourseEntity() {
+    }
+
+    public CourseEntity(String id, Integer courseId, String courseName, String description, Boolean isActive, Integer length) {
+        this.id = id;
+        this.courseId = courseId;
+        this.courseName = courseName;
+        this.description = description;
+        this.isActive = isActive;
+        this.length = length;
+    }
+
     public String getId() {
         return id;
     }
