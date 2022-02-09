@@ -15,6 +15,18 @@ public class SpartanEntity {
     private String firstName;
     private String lastName;
 
+    public SpartanEntity() {
+    }
+
+    public SpartanEntity(String id, String courseEndDate, String courseStartDate, Integer courseId, String firstName, String lastName) {
+        this.id = id;
+        this.courseEndDate = courseEndDate;
+        this.courseStartDate = courseStartDate;
+        this.courseId = courseId;
+        this.firstName = firstName;
+        this.lastName= lastName;
+    }
+
     public String getId() {
         return id;
     }
