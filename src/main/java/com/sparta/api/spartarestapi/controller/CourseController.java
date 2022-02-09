@@ -52,7 +52,10 @@ public class CourseController {
         CourseEntity courseEntity = repository.findByCourseId(courseId).orElseThrow(() -> new CourseNotFoundException(courseId));
         for (int i = 0; i < links.length; i++) {
             links[i] = linkTo(methodOn(SpartanController.class).findSpartanById(spartanRepository.
-                    findAllByCourseId(courseId).get(i).getId())).withRel("Spartan");
+                    findAllByCourseId(courseId).get(i).getId())).withRel("Spartan Name : " +
+                    spartanRepository.findAllByCourseId(courseId).get(i).getFirstName() +
+                    " " +
+                    spartanRepository.findAllByCourseId(courseId).get(i).getLastName());
         }
         return EntityModel.of(courseEntity, links);
     }
