@@ -106,27 +106,28 @@ public class SpartansFactory {
                 }
             }
         }
-        if (spartansParameters.get("active").equals("true")){
-            List<SpartanEntity> activeSpartans = new ArrayList<>();
-            for (SpartanEntity spartan: allSpartans){
-                if(LocalDate.parse(spartan.getCourseStartDate()).isBefore(LocalDate.now()) &&
-                        LocalDate.parse(spartan.getCourseEndDate()).isAfter(LocalDate.now())){
-                    activeSpartans.add(spartan);
+        if(spartansParameters.get("active") !=null) {
+            if (spartansParameters.get("active").equals("true")) {
+                List<SpartanEntity> activeSpartans = new ArrayList<>();
+                for (SpartanEntity spartan : allSpartans) {
+                    if (LocalDate.parse(spartan.getCourseStartDate()).isBefore(LocalDate.now()) &&
+                            LocalDate.parse(spartan.getCourseEndDate()).isAfter(LocalDate.now())) {
+                        activeSpartans.add(spartan);
+                    }
                 }
-            }
-            allSpartans.retainAll(activeSpartans);
-        } else if (spartansParameters.get("active").equals("false")) {
-            List<SpartanEntity> inactiveSpartans = new ArrayList<>();
-            for (SpartanEntity spartan : allSpartans) {
-                if (LocalDate.parse(spartan.getCourseStartDate()).isAfter(LocalDate.now()) ||
-                        LocalDate.parse(spartan.getCourseEndDate()).isBefore(LocalDate.now())) {
-                    inactiveSpartans.add(spartan);
+                allSpartans.retainAll(activeSpartans);
+            } else if (spartansParameters.get("active").equals("false")) {
+                List<SpartanEntity> inactiveSpartans = new ArrayList<>();
+                for (SpartanEntity spartan : allSpartans) {
+                    if (LocalDate.parse(spartan.getCourseStartDate()).isAfter(LocalDate.now()) ||
+                            LocalDate.parse(spartan.getCourseEndDate()).isBefore(LocalDate.now())) {
+                        inactiveSpartans.add(spartan);
+                    }
                 }
+                allSpartans.retainAll(inactiveSpartans);
             }
-            allSpartans.retainAll(inactiveSpartans);
         }
         return CollectionModel.of(getEntityModelList(allSpartans));
-        
     }
 
     private List<EntityModel<SpartanEntity>> getEntityModelList(List<SpartanEntity> spartanEntities) throws ValidationException {
