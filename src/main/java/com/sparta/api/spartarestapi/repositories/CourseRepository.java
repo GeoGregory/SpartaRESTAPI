@@ -11,4 +11,5 @@ public interface CourseRepository extends MongoRepository <CourseEntity, String>
     List<CourseEntity> findAllByCourseNameIsNotNull();
     Optional<CourseEntity> findByCourseId(Integer courseId);
     List<CourseEntity> findAllByCourseNameContainsIgnoreCase(String courseName);
+    List<CourseEntity> findAllByIsActiveEqualsAndCourseNameIsNotNull(Boolean isActive);
 }
