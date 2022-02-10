@@ -48,14 +48,12 @@ public class CourseController {
 
     @GetMapping("/courses/{courseId}")
     public EntityModel<CourseEntity> findCourseById(@PathVariable("courseId") Integer courseId){
+
         Link[] links = new Link[spartanRepository.findAllByCourseId(courseId).size()];
         CourseEntity courseEntity = repository.findByCourseId(courseId).orElseThrow(() -> new CourseNotFoundException(courseId));
         for (int i = 0; i < links.length; i++) {
-            links[i] = linkTo(methodOn(SpartanController.class).findSpartanById(spartanRepository.
-                    findAllByCourseId(courseId).get(i).getId())).withRel("Spartan Name : " +
-                    spartanRepository.findAllByCourseId(courseId).get(i).getFirstName() +
-                    " " +
-                    spartanRepository.findAllByCourseId(courseId).get(i).getLastName());
+            SpartanEntity spartan = spartanRepository.findAllByCourseId(courseId).get(i);
+            links[i] = linkTo(methodOn(SpartanController.class).findSpartanById(spartan.getId())).withRel("Spartan");
         }
         return EntityModel.of(courseEntity, links);
     }
