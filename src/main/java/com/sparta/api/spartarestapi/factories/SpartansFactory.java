@@ -34,10 +34,16 @@ public class SpartansFactory {
 
         if(spartansParameters.get("firstName")!=null){
             List<SpartanEntity> spartansByFirstName = spartanRepository.findAllByFirstNameContainsIgnoreCase(spartansParameters.get("firstName"));
+            if(spartansByFirstName.size() == 0){
+                throw new ValidationException("Spartan with first name " + spartansParameters.get("firstName") + " does not exist in the database.");
+            }
             allSpartans.retainAll(spartansByFirstName);
         }
         if (spartansParameters.get("lastName") != null){
             List<SpartanEntity> spartansByLastName = spartanRepository.findAllByLastNameContainsIgnoreCase(spartansParameters.get("lastName"));
+            if(spartansByLastName.size() == 0){
+                throw new ValidationException("Spartan with last name " +spartansParameters.get("lastName") + " does not exist in the database.");
+            }
             allSpartans.retainAll(spartansByLastName);
         }
         if (spartansParameters.get("date") !=null && spartansParameters.get("beforeAfter") != null && spartansParameters.get("startEnd") != null){
@@ -50,6 +56,9 @@ public class SpartansFactory {
                                 spartansBeforeStart.add(spartan);
                         }
                     }
+                    if(spartansBeforeStart.size() == 0){
+                        throw new ValidationException("Spartans starting before " +spartansParameters.get("date") + " do not exist in the database.");
+                    }
                     allSpartans.retainAll(spartansBeforeStart);
                 }
                 else if (spartansParameters.get("startEnd").equals("end")) {
@@ -59,6 +68,9 @@ public class SpartansFactory {
                             if (LocalDate.parse(spartan.getCourseEndDate().trim()).isBefore(LocalDate.parse(spartansParameters.get("date").trim())))
                                 spartansBeforeEnd.add(spartan);
                         }
+                    }
+                    if(spartansBeforeEnd.size() == 0){
+                        throw new ValidationException("Spartans finishing before " +spartansParameters.get("date") + " do not exist in the database.");
                     }
                     allSpartans.retainAll(spartansBeforeEnd);
                 }
@@ -71,6 +83,9 @@ public class SpartansFactory {
                                 spartansAfterStart.add(spartan);
                         }
                     }
+                    if(spartansAfterStart.size() == 0){
+                        throw new ValidationException("Spartans starting after " +spartansParameters.get("date") + " do not exist in the database.");
+                    }
                     allSpartans.retainAll(spartansAfterStart);
                 }
                 else if (spartansParameters.get("startEnd").equals("end")) {
@@ -80,6 +95,9 @@ public class SpartansFactory {
                             if (LocalDate.parse(spartan.getCourseEndDate().trim()).isAfter(LocalDate.parse(spartansParameters.get("date").trim())))
                                 spartansAfterEnd.add(spartan);
                         }
+                    }
+                    if(spartansAfterEnd.size() == 0){
+                        throw new ValidationException("Spartans finishing after " +spartansParameters.get("date") + " do not exist in the database.");
                     }
                     allSpartans.retainAll(spartansAfterEnd);
                 }
@@ -92,6 +110,9 @@ public class SpartansFactory {
                                 spartansNowStart.add(spartan);
                         }
                     }
+                    if(spartansNowStart.size() == 0){
+                        throw new ValidationException("Spartans starting on " +spartansParameters.get("date") + " do not exist in the database.");
+                    }
                     allSpartans.retainAll(spartansNowStart);
                 }
                 else if (spartansParameters.get("startEnd").equals("end")) {
@@ -102,11 +123,14 @@ public class SpartansFactory {
                                 spartansNowEnd.add(spartan);
                         }
                     }
+                    if(spartansNowEnd.size() == 0){
+                        throw new ValidationException("Spartans finishing on " +spartansParameters.get("date") + " do not exist in the database.");
+                    }
                     allSpartans.retainAll(spartansNowEnd);
                 }
             }
         }
-        if(spartansParameters.get("active") !=null) {
+        if (spartansParameters.get("active") != null) {
             if (spartansParameters.get("active").equals("true")) {
                 List<SpartanEntity> activeSpartans = new ArrayList<>();
                 for (SpartanEntity spartan : allSpartans) {
@@ -114,6 +138,9 @@ public class SpartansFactory {
                             LocalDate.parse(spartan.getCourseEndDate()).isAfter(LocalDate.now())) {
                         activeSpartans.add(spartan);
                     }
+                }
+                if(activeSpartans.isEmpty()){
+                    throw new ValidationException("There are no active Spartans in the database.");
                 }
                 allSpartans.retainAll(activeSpartans);
             } else if (spartansParameters.get("active").equals("false")) {
@@ -123,6 +150,9 @@ public class SpartansFactory {
                             LocalDate.parse(spartan.getCourseEndDate()).isBefore(LocalDate.now())) {
                         inactiveSpartans.add(spartan);
                     }
+                }
+                if(inactiveSpartans.isEmpty()){
+                    throw new ValidationException("There are no inactive Spartans in the database.");
                 }
                 allSpartans.retainAll(inactiveSpartans);
             }

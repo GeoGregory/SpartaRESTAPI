@@ -50,7 +50,7 @@ public class CourseController {
     public EntityModel<CourseEntity> findCourseById(@PathVariable("courseId") Integer courseId){
 
         Link[] links = new Link[spartanRepository.findAllByCourseId(courseId).size()];
-        CourseEntity courseEntity = repository.findByCourseId(courseId).orElseThrow(() -> new CourseNotFoundException(courseId));
+        CourseEntity courseEntity = repository.findByCourseId(courseId).orElseThrow(() -> new CourseNotFoundException("Could not find course with id : " + courseId));
         for (int i = 0; i < links.length; i++) {
             SpartanEntity spartan = spartanRepository.findAllByCourseId(courseId).get(i);
             links[i] = linkTo(methodOn(SpartanController.class).findSpartanById(spartan.getId())).withRel("Spartan");
