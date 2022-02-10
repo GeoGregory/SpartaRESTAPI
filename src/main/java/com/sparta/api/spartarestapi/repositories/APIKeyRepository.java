@@ -11,4 +11,6 @@ public interface APIKeyRepository extends MongoRepository<APIKeyEntity, String> 
     List<APIKeyEntity> findAllByAPIKeyIsNotNull();
     APIKeyEntity findByUsernameEqualsAndPasswordEquals(String username, String password);
     APIKeyEntity findByUsernameEquals(String username);
+    APIKeyEntity findByAPIKey(String APIKey);
+    APIKeyEntity deleteByAPIKey(String APIKey);
 }

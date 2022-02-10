@@ -30,15 +30,15 @@ public class APIKeyController {
         return "Your API key is: " + apiKeyEntity.getAPIKey();
     }
 
-    @DeleteMapping("/apiKeys/{id}/{adminApiKey}")
-    public String deleteApiKey(@PathVariable("id") String id, @PathVariable("adminApiKey") String apiKey){
+    @DeleteMapping("/apiKeys/{apiKey}/{adminApiKey}")
+    public String deleteApiKey(@PathVariable("apiKey") String apiKey, @PathVariable("adminApiKey") String adminApiKey){
         APIKeyEntity key = apiKeyRepository.findByUsernameEquals("ADMIN");
-        if (key.getAPIKey().equals(apiKey)) {
-            if(apiKeyRepository.findById(id).isPresent()){
-                apiKeyRepository.deleteById(id);
-                return "Successfully deleted API Key with id : " + id;
+        if (key.getAPIKey().equals(adminApiKey)) {
+            if(apiKeyRepository.findByAPIKey(apiKey).getAPIKey().equals(apiKey)){
+                apiKeyRepository.deleteByAPIKey(apiKey);
+                return "Successfully deleted API Key with apiKey : " + apiKey;
             } else {
-                return "Could Not Find API with id: " + id;
+                return "Could Not Find API with apiKey: " + apiKey;
             }
         }
         else
