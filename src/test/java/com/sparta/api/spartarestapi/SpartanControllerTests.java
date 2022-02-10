@@ -39,7 +39,8 @@ public class SpartanControllerTests {
         apiKeyEntity = new APIKeyEntity("TestKey", "TestApiKey");
         courseEntity = new CourseEntity("kjlsdlk", 1, "Java", "newCourse", true, 1);
         Mockito.when(mockApiKeyRepository.findAllByAPIKeyIsNotNull()).thenReturn(List.of(apiKeyEntity));
-        spartanTestEntity = new SpartanEntity("spartanID","2022-04-15","2022-02-9",4,"Hendrix","Gardner");
+        spartanTestEntity = new SpartanEntity("spartanID","2022-04-15","2022-02-09",1,"Hendrix","Gardner");
+        updateSpartanTestEntity = new SpartanEntity("spartanID","2022-03-15","2022-02-09",1,"Hendrix","Gardner");
         spartanController = new SpartanController(mockSpartanRepository, mockCourseRepository, mockApiKeyRepository);
     }
 
@@ -106,5 +107,13 @@ public class SpartanControllerTests {
 
 
 
-
+    @Test
+    public void checkDeleteSpartan(){
+        try {
+            spartanController.deleteSpartan(spartanTestEntity.getId(), apiKeyEntity.getAPIKey());
+        } catch (ValidationException e) {
+            e.printStackTrace();
+        }
+        Mockito.verify(mockSpartanRepository).deleteById(spartanTestEntity.getId());
+    }
 }
