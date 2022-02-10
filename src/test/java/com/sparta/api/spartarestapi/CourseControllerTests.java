@@ -71,4 +71,20 @@ public class CourseControllerTests {
         Mockito.verify(mockCourseRepository).findByCourseId(1);
     }
 
+    @Test
+    public void getActiveCourses(){
+        courseController.getActiveCourses();
+        Mockito.verify(mockCourseRepository).findAllByIsActiveEqualsAndCourseNameIsNotNull(true);
+    }
+
+    @Test
+    public void getNotActiveCourses(){
+        try {
+            courseController.getNonActiveCourses();
+        } catch (ValidationException e) {
+            e.printStackTrace();
+        }
+        Mockito.verify(mockCourseRepository).findAllByIsActiveEqualsAndCourseNameIsNotNull(false);
+    }
+
 }
