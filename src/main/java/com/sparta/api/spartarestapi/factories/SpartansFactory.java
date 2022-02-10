@@ -82,8 +82,6 @@ public class SpartansFactory {
                                 correctSpartans.add(spartan);
                         }
                     }
-                    allSpartans.retainAll(correctSpartans);
-                    correctSpartans.clear();
                     if(correctSpartans.isEmpty()){
                         throw new ValidationException("Spartans starting after " +spartansParameters.get("date") + " do not exist in the database.");
                     }
