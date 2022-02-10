@@ -4,6 +4,7 @@ import com.sparta.api.spartarestapi.entities.APIKeyEntity;
 import com.sparta.api.spartarestapi.entities.CourseEntity;
 import com.sparta.api.spartarestapi.entities.SpartanEntity;
 import com.sparta.api.spartarestapi.exceptions.CourseNotFoundException;
+import com.sparta.api.spartarestapi.exceptions.InvalidApiKeyException;
 import com.sparta.api.spartarestapi.exceptions.SpartanNotFoundException;
 import com.sparta.api.spartarestapi.repositories.APIKeyRepository;
 import com.sparta.api.spartarestapi.repositories.CourseRepository;
@@ -40,9 +41,13 @@ public class CourseController {
     @ResponseBody
     public CollectionModel<CourseEntity> getCourses(@RequestParam(required = false, value = "name") String courseName){
         if(courseName!=null){
-            return CollectionModel.of(
-                    repository.findAllByCourseNameContainsIgnoreCase(courseName)
-            );
+            List<CourseEntity> courses = repository.findAllByCourseNameContainsIgnoreCase(courseName);
+            if(courses.isEmpty()) {
+                throw new CourseNotFoundException("Courses with name : " + courseName + " do not exist");
+
+            } else {
+                return CollectionModel.of(courses);
+            }
         }
         return CollectionModel.of(repository.findAllByCourseNameIsNotNull());
     }
@@ -63,29 +68,32 @@ public class CourseController {
     public CourseEntity addCourse(@RequestBody CourseEntity course, @PathVariable("apiKey") String apiKey) throws ValidationException {
         APIKeyEntity key = apiKeyRepository.findByUsernameEquals("ADMIN");
         if (key.getAPIKey().equals(apiKey)) {
-            if (course.getCourseName() != null && course.getLength() != null
-                    && course.getDescription() != null) {
-                course.setCourseId(repository.findAllByCourseNameIsNotNull().size() + 1);
-                course.setActive(true);
-                return repository.save(course);
-            }
-            throw new ValidationException("Course cannot be created due to invalid input");
-        }
-
-        throw new ValidationException("Invalid API Key");
+            if (course.getCourseName() != null) {
+                if (course.getLength() != null) {
+                    if (course.getDescription() != null) {
+                        course.setCourseId(repository.findAllByCourseNameIsNotNull().size() + 1);
+                        course.setActive(true);
+                        return repository.save(course);
+                    } throw new ValidationException("Course cannot be created due to description missing.");
+                } throw new ValidationException("Course cannot be created due to length missing.");
+            } throw new ValidationException("Course cannot be created due to course name missing.");
+        } throw new InvalidApiKeyException("A valid ADMIN API key is needed for this feature.");
     }
 
     @GetMapping("/courses/isActive")
     public CollectionModel<CourseEntity> getActiveCourses(){
         List<CourseEntity> activeCourse = repository.findAllByIsActiveEqualsAndCourseNameIsNotNull(true);
+        if(activeCourse.isEmpty()){
+            throw new CourseNotFoundException("There are no active courses.");
+        }
         return CollectionModel.of(activeCourse);
     }
 
     @GetMapping("/courses/nonActive")
-    public CollectionModel<CourseEntity> getNonActiveCourses() throws ValidationException{
+    public CollectionModel<CourseEntity> getNonActiveCourses(){
         List<CourseEntity> nonActiveCourse = repository.findAllByIsActiveEqualsAndCourseNameIsNotNull(false);
         if (nonActiveCourse.isEmpty()) {
-            throw new ValidationException("No non-active courses available");
+            throw new CourseNotFoundException("No inactive courses available");
         }
         return CollectionModel.of(nonActiveCourse);
     }
@@ -117,7 +125,7 @@ public class CourseController {
             }
             return new ResponseEntity<>(updatedCourse, HttpStatus.BAD_REQUEST);
         }
-        throw new ValidationException("Invalid API Key");
+        throw new InvalidApiKeyException("A valid ADMIN API key is needed for this feature.");
     }
 
     @DeleteMapping("/courses/{id}/{apiKey}")
@@ -131,17 +139,22 @@ public class CourseController {
                 throw new CourseNotFoundException("Course by id: " + id + " does not exist");
             }
         }
-        throw new ValidationException("A valid API key is needed for this feature");
+        throw new InvalidApiKeyException("A valid ADMIN API key is needed for this feature.");
+    }
+
+    @DeleteMapping("/courses/{id}")
+    public void courseWithoutAPIKeyDelete(@PathVariable("id") String id) throws ValidationException {
+        throw new InvalidApiKeyException("A valid ADMIN API key is needed for this feature.");
     }
 
     @PostMapping("/courses/")
     public void courseWithoutAPIKeyPost() throws ValidationException {
-        throw new ValidationException("Need an API Key to perform this action !!!");
+        throw new InvalidApiKeyException("A valid ADMIN API key is needed for this feature.");
     }
 
     @PutMapping("/courses/")
     public void courseWithoutAPIKeyPut() throws ValidationException {
-        throw new ValidationException("Need an API Key to perform this action !!!");
+        throw new InvalidApiKeyException("A valid ADMIN API key is needed for this feature.");
     }
 
     private void updateSpartanEndDate(Integer courseId, Integer length) throws ValidationException {
