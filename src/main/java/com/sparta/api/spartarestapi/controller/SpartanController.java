@@ -3,6 +3,7 @@ package com.sparta.api.spartarestapi.controller;
 import com.sparta.api.spartarestapi.entities.APIKeyEntity;
 import com.sparta.api.spartarestapi.entities.CourseEntity;
 import com.sparta.api.spartarestapi.entities.SpartanEntity;
+import com.sparta.api.spartarestapi.exceptions.CourseNotFoundException;
 import com.sparta.api.spartarestapi.exceptions.SpartanNotFoundException;
 import com.sparta.api.spartarestapi.repositories.APIKeyRepository;
 import com.sparta.api.spartarestapi.repositories.CourseRepository;
@@ -53,21 +54,26 @@ public class SpartanController {
 
 
     @DeleteMapping("/spartans/{id}/{apiKey}")
-    public ResponseEntity<?> deleteSpartan(@PathVariable("id") String id, @PathVariable("apiKey") String apiKey) throws ValidationException {
+    public ResponseEntity<String> deleteSpartan(@PathVariable("id") String id, @PathVariable("apiKey") String apiKey) throws ValidationException {
         List<APIKeyEntity> allKeys = apiKeyRepository.findAllByAPIKeyIsNotNull();
         for (APIKeyEntity key: allKeys) {
             if (key.getAPIKey().equals(apiKey)) {
-                repository.deleteById(id);
-                return ResponseEntity.noContent().build();
+                if(repository.findById(id).isPresent()){
+                    repository.deleteById(id);
+                    return new ResponseEntity<>("Successfully deleted Spartan with id : " + id, HttpStatus.OK);
+                } else {
+                    throw new SpartanNotFoundException("Spartan by id: " + id + " does not exist");
+                }
+
             }
         }
-        throw new ValidationException("Invalid API Key");
+        throw new ValidationException("A valid API key is needed for this feature");
     }
 
     @GetMapping("spartans/{id}")
     public EntityModel<SpartanEntity> findSpartanById(@PathVariable("id") String id) {
         //add exception
-        SpartanEntity spartanEntity = repository.findById(id).orElseThrow(() -> new SpartanNotFoundException(id));
+        SpartanEntity spartanEntity = repository.findById(id).orElseThrow(() -> new SpartanNotFoundException("Spartan by id: " + id + " does not exist"));
         return EntityModel.of(spartanEntity,
                 Link.of("http://localhost:8080/courses/" + spartanEntity.getCourseId()).withRel("course")
         );
@@ -78,18 +84,8 @@ public class SpartanController {
     public SpartanEntity addSpartan(@RequestBody SpartanEntity spartan, @PathVariable("apiKey") String apiKey) throws ValidationException {
         List<APIKeyEntity> allKeys = apiKeyRepository.findAllByAPIKeyIsNotNull();
         for (APIKeyEntity key: allKeys) {
-            if (key.getAPIKey().equals(apiKey)) {
-                if (spartan.getFirstName() != null && spartan.getLastName() != null
-                        && spartan.getCourseStartDate() != null && spartan.getCourseId() != null) {
-                    if (checkSpartan(spartan)) {
-                        CourseEntity course = courseRepository.findByCourseId(spartan.getCourseId()).orElseThrow();
-                        if (spartan.getCourseId().equals(course.getCourseId())) {
-                            return calculateEndDate(spartan, course.getLength());
-                        }
-                    }
-                    throw new ValidationException("Spartan cannot be created due to invalid details");
-                }
-            }
+            SpartanEntity spartan1 = nullCheckSpartan(spartan, apiKey, key);
+            if (spartan1 != null) return spartan1;
         }
         throw new ValidationException("Invalid API Key");
     }
@@ -123,7 +119,7 @@ public class SpartanController {
                             if (LocalDate.parse(updatedSpartan.getCourseEndDate()).isBefore(LocalDate.of(2050, 12, 31))) {
                                 return new ResponseEntity<>(repository.save(updatedSpartan), HttpStatus.OK);
                             } else {
-                                throw new ValidationException("Spartan cannot be created due to invalid details");
+                                throw new ValidationException("Spartan cannot be created due to the end date being past 31-12-2050");
                             }
                         }
                     }
@@ -146,16 +142,16 @@ public class SpartanController {
             return spartanRepository.save(spartan);
         }
         else {
-            throw new ValidationException("Spartan cannot be created due to invalid details");
+            throw new ValidationException("Spartan cannot be created, due to the start date causing the end date to be after 31-12-2050");
         }
     }
 
-    @PostMapping("/spartans/")
+    @PostMapping("/spartans")
     public void spartanWithoutAPIKeyPost() throws ValidationException {
         throw new ValidationException("Need an API Key to perform this action !!!");
     }
 
-    @PutMapping("/spartans/")
+    @PutMapping("/spartans")
     public void spartanWithoutAPIKeyPut() throws ValidationException {
         throw new ValidationException("Need an API Key to perform this action !!!");
     }
@@ -165,11 +161,48 @@ public class SpartanController {
         throw new ValidationException("Need an API Key to perform this action !!!");
     }
 
-    private boolean checkSpartan(SpartanEntity spartan) {
-        return spartan.getFirstName().length() <= 100 && spartan.getLastName().length() <= 100
-                && LocalDate.parse(spartan.getCourseStartDate()).isAfter(LocalDate.of(2021,12,31))
-                && spartan.getCourseId() > 0
-                && spartan.getCourseId() < courseRepository.findAllByCourseNameIsNotNull().size();
+    private boolean checkSpartan(SpartanEntity spartan) throws ValidationException {
+        if(spartan.getFirstName().length() <= 100){
+            if(spartan.getLastName().length() <= 100){
+                if(LocalDate.parse(spartan.getCourseStartDate()).isAfter(LocalDate.of(2021,12,31))){
+                    if(spartan.getCourseId() > 0) {
+                        if (spartan.getCourseId() < courseRepository.findAllByCourseNameIsNotNull().size()) {
+                            return true;
+                        } else {
+                            throw new CourseNotFoundException("Course id is not within range of available courses.");
+                        }
+                    } else {
+                        throw new CourseNotFoundException("Course id cannot be negative.");
+                    }
+                } else {
+                    throw new ValidationException("Course start date must be after 31/12/2021.");
+                }
+            } else {
+                throw new ValidationException("Last name must be less that 100 characters.");
+            }
+        } else {
+            throw new ValidationException("First name must be less that 100 characters.");
+        }
+    }
+
+    private SpartanEntity nullCheckSpartan(SpartanEntity spartan, String apiKey, APIKeyEntity key) throws ValidationException {
+        if (key.getAPIKey().equals(apiKey)) {
+            if (spartan.getFirstName() != null){
+                if (spartan.getLastName() != null){
+                    if (spartan.getCourseStartDate() != null) {
+                        if (spartan.getCourseId() != null) {
+                            if (checkSpartan(spartan)) {
+                                CourseEntity course = courseRepository.findByCourseId(spartan.getCourseId()).orElseThrow();
+                                if (spartan.getCourseId().equals(course.getCourseId())) {
+                                    return calculateEndDate(spartan, course.getLength());
+                                }
+                            }
+                        }else {throw new ValidationException("Spartan cannot be created due to no course id being present.");}
+                    } else {throw new ValidationException("Spartan cannot be created due to no start date being present.");}
+                } else {throw new ValidationException("Spartan cannot be created due to no last name being present.");}
+            } else {throw new ValidationException("Spartan cannot be created due to no first name being present.");}
+        }
+        return null;
     }
 
 }

@@ -34,10 +34,16 @@ public class SpartansFactory {
 
         if(spartansParameters.get("firstName")!=null){
             List<SpartanEntity> spartansByFirstName = spartanRepository.findAllByFirstNameContainsIgnoreCase(spartansParameters.get("firstName"));
+            if(spartansByFirstName.size() == 0){
+                throw new ValidationException("Spartan with first name " + spartansParameters.get("firstName") + " does not exist in the database.");
+            }
             allSpartans.retainAll(spartansByFirstName);
         }
         if (spartansParameters.get("lastName") != null){
             List<SpartanEntity> spartansByLastName = spartanRepository.findAllByLastNameContainsIgnoreCase(spartansParameters.get("lastName"));
+            if(spartansByLastName.size() == 0){
+                throw new ValidationException("Spartan with last name " +spartansParameters.get("lastName") + " does not exist in the database.");
+            }
             allSpartans.retainAll(spartansByLastName);
         }
         if (spartansParameters.get("date") !=null && spartansParameters.get("beforeAfter") != null && spartansParameters.get("startEnd") != null){
@@ -49,6 +55,9 @@ public class SpartansFactory {
                                 correctSpartans.add(spartan);
                         }
                     }
+                    if(correctSpartans.isEmpty()){
+                        throw new ValidationException("Spartans starting before " +spartansParameters.get("date") + " do not exist in the database.");
+                    }
                     allSpartans.retainAll(correctSpartans);
                     correctSpartans.clear();
                 }
@@ -58,6 +67,9 @@ public class SpartansFactory {
                             if (LocalDate.parse(spartan.getCourseEndDate().trim()).isBefore(LocalDate.parse(spartansParameters.get("date").trim())))
                                 correctSpartans.add(spartan);
                         }
+                    }
+                    if(correctSpartans.isEmpty()){
+                        throw new ValidationException("Spartans finishing before " +spartansParameters.get("date") + " do not exist in the database.");
                     }
                     allSpartans.retainAll(correctSpartans);
                     correctSpartans.clear();
@@ -70,6 +82,9 @@ public class SpartansFactory {
                                 correctSpartans.add(spartan);
                         }
                     }
+                    if(correctSpartans.isEmpty()){
+                        throw new ValidationException("Spartans starting after " +spartansParameters.get("date") + " do not exist in the database.");
+                    }
                     allSpartans.retainAll(correctSpartans);
                     correctSpartans.clear();
                 }
@@ -79,6 +94,9 @@ public class SpartansFactory {
                             if (LocalDate.parse(spartan.getCourseEndDate().trim()).isAfter(LocalDate.parse(spartansParameters.get("date").trim())))
                                 correctSpartans.add(spartan);
                         }
+                    }
+                    if(correctSpartans.isEmpty()){
+                        throw new ValidationException("Spartans finishing after " +spartansParameters.get("date") + " do not exist in the database.");
                     }
                     allSpartans.retainAll(correctSpartans);
                     correctSpartans.clear();
@@ -91,6 +109,9 @@ public class SpartansFactory {
                                 correctSpartans.add(spartan);
                         }
                     }
+                    if(correctSpartans.isEmpty()){
+                        throw new ValidationException("Spartans starting on " +spartansParameters.get("date") + " do not exist in the database.");
+                    }
                     allSpartans.retainAll(correctSpartans);
                     correctSpartans.clear();
                 }
@@ -100,6 +121,9 @@ public class SpartansFactory {
                             if (LocalDate.parse(spartan.getCourseEndDate().trim()).isEqual(LocalDate.parse(spartansParameters.get("date").trim())))
                                 correctSpartans.add(spartan);
                         }
+                    }
+                    if(correctSpartans.isEmpty()){
+                        throw new ValidationException("Spartans finishing on " +spartansParameters.get("date") + " do not exist in the database.");
                     }
                     allSpartans.retainAll(correctSpartans);
                     correctSpartans.clear();
@@ -115,6 +139,9 @@ public class SpartansFactory {
                         correctSpartans.add(spartan);
                     }
                 }
+                if(correctSpartans.isEmpty()){
+                    throw new ValidationException("There are no active Spartans in the database.");
+                }
                 allSpartans.retainAll(correctSpartans);
                 correctSpartans.clear();
             } else if (spartansParameters.get("active").equals("false")) {
@@ -123,6 +150,9 @@ public class SpartansFactory {
                             LocalDate.parse(spartan.getCourseEndDate()).isBefore(LocalDate.now())) {
                         correctSpartans.add(spartan);
                     }
+                }
+                if(correctSpartans.isEmpty()){
+                    throw new ValidationException("There are no inactive Spartans in the database.");
                 }
                 allSpartans.retainAll(correctSpartans);
                 correctSpartans.clear();
