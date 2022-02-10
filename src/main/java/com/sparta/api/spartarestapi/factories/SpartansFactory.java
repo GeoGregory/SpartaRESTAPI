@@ -30,7 +30,7 @@ public class SpartansFactory {
             return CollectionModel.of(getEntityModelList(spartanRepository.findAllByFirstNameIsNotNull()));
         }
         List<SpartanEntity> allSpartans = spartanRepository.findAllByFirstNameIsNotNull();
-
+        List<SpartanEntity> correctSpartans = new ArrayList<>();
 
         if(spartansParameters.get("firstName")!=null){
             List<SpartanEntity> spartansByFirstName = spartanRepository.findAllByFirstNameContainsIgnoreCase(spartansParameters.get("firstName"));
@@ -49,112 +49,116 @@ public class SpartansFactory {
         if (spartansParameters.get("date") !=null && spartansParameters.get("beforeAfter") != null && spartansParameters.get("startEnd") != null){
             if (spartansParameters.get("beforeAfter").equals("before")){
                 if (spartansParameters.get("startEnd").equals("start")) {
-                    List<SpartanEntity> spartansBeforeStart = new ArrayList<>();
                     for (SpartanEntity spartan: allSpartans) {
                         if (spartan.getCourseStartDate() != null && spartan.getCourseEndDate() != null) {
                             if (LocalDate.parse(spartan.getCourseStartDate().trim()).isBefore(LocalDate.parse(spartansParameters.get("date").trim())))
-                                spartansBeforeStart.add(spartan);
+                                correctSpartans.add(spartan);
                         }
                     }
-                    if(spartansBeforeStart.size() == 0){
+                    if(correctSpartans.isEmpty()){
                         throw new ValidationException("Spartans starting before " +spartansParameters.get("date") + " do not exist in the database.");
                     }
-                    allSpartans.retainAll(spartansBeforeStart);
+                    allSpartans.retainAll(correctSpartans);
+                    correctSpartans.clear();
                 }
                 else if (spartansParameters.get("startEnd").equals("end")) {
-                    List<SpartanEntity> spartansBeforeEnd = new ArrayList<>();
                     for (SpartanEntity spartan: allSpartans) {
                         if (spartan.getCourseStartDate() != null && spartan.getCourseEndDate() != null) {
                             if (LocalDate.parse(spartan.getCourseEndDate().trim()).isBefore(LocalDate.parse(spartansParameters.get("date").trim())))
-                                spartansBeforeEnd.add(spartan);
+                                correctSpartans.add(spartan);
                         }
                     }
-                    if(spartansBeforeEnd.size() == 0){
+                    if(correctSpartans.isEmpty()){
                         throw new ValidationException("Spartans finishing before " +spartansParameters.get("date") + " do not exist in the database.");
                     }
-                    allSpartans.retainAll(spartansBeforeEnd);
+                    allSpartans.retainAll(correctSpartans);
+                    correctSpartans.clear();
                 }
             } else if (spartansParameters.get("beforeAfter").equals("after")){
                 if (spartansParameters.get("startEnd").equals("start")) {
-                    List<SpartanEntity> spartansAfterStart = new ArrayList<>();
                     for (SpartanEntity spartan: allSpartans) {
                         if (spartan.getCourseStartDate() != null && spartan.getCourseEndDate() != null) {
                             if (LocalDate.parse(spartan.getCourseStartDate().trim()).isAfter(LocalDate.parse(spartansParameters.get("date").trim())))
-                                spartansAfterStart.add(spartan);
+                                correctSpartans.add(spartan);
                         }
                     }
-                    if(spartansAfterStart.size() == 0){
+                    allSpartans.retainAll(correctSpartans);
+                    correctSpartans.clear();
+                    if(correctSpartans.isEmpty()){
                         throw new ValidationException("Spartans starting after " +spartansParameters.get("date") + " do not exist in the database.");
                     }
-                    allSpartans.retainAll(spartansAfterStart);
+                    allSpartans.retainAll(correctSpartans);
+                    correctSpartans.clear();
                 }
                 else if (spartansParameters.get("startEnd").equals("end")) {
-                    List<SpartanEntity> spartansAfterEnd = new ArrayList<>();
                     for (SpartanEntity spartan: allSpartans) {
                         if (spartan.getCourseStartDate() != null && spartan.getCourseEndDate() != null) {
                             if (LocalDate.parse(spartan.getCourseEndDate().trim()).isAfter(LocalDate.parse(spartansParameters.get("date").trim())))
-                                spartansAfterEnd.add(spartan);
+                                correctSpartans.add(spartan);
                         }
                     }
-                    if(spartansAfterEnd.size() == 0){
+                    if(correctSpartans.isEmpty()){
                         throw new ValidationException("Spartans finishing after " +spartansParameters.get("date") + " do not exist in the database.");
                     }
-                    allSpartans.retainAll(spartansAfterEnd);
+                    allSpartans.retainAll(correctSpartans);
+                    correctSpartans.clear();
                 }
             } else if (spartansParameters.get("beforeAfter").equals("now")){
                 if (spartansParameters.get("startEnd").equals("start")) {
-                    List<SpartanEntity> spartansNowStart = new ArrayList<>();
                     for (SpartanEntity spartan: allSpartans) {
                         if (spartan.getCourseStartDate() != null && spartan.getCourseEndDate() != null) {
                             if (LocalDate.parse(spartan.getCourseStartDate().trim()).isEqual(LocalDate.parse(spartansParameters.get("date").trim())))
-                                spartansNowStart.add(spartan);
+                                correctSpartans.add(spartan);
                         }
                     }
-                    if(spartansNowStart.size() == 0){
+                    if(correctSpartans.isEmpty()){
                         throw new ValidationException("Spartans starting on " +spartansParameters.get("date") + " do not exist in the database.");
                     }
-                    allSpartans.retainAll(spartansNowStart);
+                    allSpartans.retainAll(correctSpartans);
+                    correctSpartans.clear();
                 }
                 else if (spartansParameters.get("startEnd").equals("end")) {
-                    List<SpartanEntity> spartansNowEnd = new ArrayList<>();
                     for (SpartanEntity spartan: allSpartans) {
                         if (spartan.getCourseStartDate() != null && spartan.getCourseEndDate() != null) {
                             if (LocalDate.parse(spartan.getCourseEndDate().trim()).isEqual(LocalDate.parse(spartansParameters.get("date").trim())))
-                                spartansNowEnd.add(spartan);
+                                correctSpartans.add(spartan);
                         }
                     }
-                    if(spartansNowEnd.size() == 0){
+                    if(correctSpartans.isEmpty()){
                         throw new ValidationException("Spartans finishing on " +spartansParameters.get("date") + " do not exist in the database.");
                     }
-                    allSpartans.retainAll(spartansNowEnd);
+                    allSpartans.retainAll(correctSpartans);
+                    correctSpartans.clear();
                 }
             }
         }
+
         if (spartansParameters.get("active") != null) {
             if (spartansParameters.get("active").equals("true")) {
-                List<SpartanEntity> activeSpartans = new ArrayList<>();
                 for (SpartanEntity spartan : allSpartans) {
                     if (LocalDate.parse(spartan.getCourseStartDate()).isBefore(LocalDate.now()) &&
                             LocalDate.parse(spartan.getCourseEndDate()).isAfter(LocalDate.now())) {
-                        activeSpartans.add(spartan);
+                        correctSpartans.add(spartan);
                     }
                 }
-                if(activeSpartans.isEmpty()){
+                if(correctSpartans.isEmpty()){
                     throw new ValidationException("There are no active Spartans in the database.");
                 }
-                allSpartans.retainAll(activeSpartans);
+                allSpartans.retainAll(correctSpartans);
+                correctSpartans.clear();
             } else if (spartansParameters.get("active").equals("false")) {
-                List<SpartanEntity> inactiveSpartans = new ArrayList<>();
                 for (SpartanEntity spartan : allSpartans) {
                     if (LocalDate.parse(spartan.getCourseStartDate()).isAfter(LocalDate.now()) ||
                             LocalDate.parse(spartan.getCourseEndDate()).isBefore(LocalDate.now())) {
-                        inactiveSpartans.add(spartan);
+                        correctSpartans.add(spartan);
                     }
                 }
-                if(inactiveSpartans.isEmpty()){
+                if(correctSpartans.isEmpty()){
                     throw new ValidationException("There are no inactive Spartans in the database.");
                 }
-                allSpartans.retainAll(inactiveSpartans);
+                allSpartans.retainAll(correctSpartans);
+                correctSpartans.clear();
+
             }
         }
         return CollectionModel.of(getEntityModelList(allSpartans));
