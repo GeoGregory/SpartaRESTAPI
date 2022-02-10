@@ -4,6 +4,7 @@ import com.sparta.api.spartarestapi.entities.APIKeyEntity;
 import com.sparta.api.spartarestapi.entities.CourseEntity;
 import com.sparta.api.spartarestapi.entities.SpartanEntity;
 import com.sparta.api.spartarestapi.exceptions.CourseNotFoundException;
+import com.sparta.api.spartarestapi.exceptions.InvalidApiKeyException;
 import com.sparta.api.spartarestapi.exceptions.SpartanNotFoundException;
 import com.sparta.api.spartarestapi.repositories.APIKeyRepository;
 import com.sparta.api.spartarestapi.repositories.CourseRepository;
@@ -61,36 +62,27 @@ public class SpartanController {
                 if(repository.findById(id).isPresent()){
                     repository.deleteById(id);
                     return new ResponseEntity<>("Successfully deleted Spartan with id : " + id, HttpStatus.OK);
-                } else {
-                    throw new SpartanNotFoundException("Spartan by id: " + id + " does not exist");
-                }
-
+                } throw new SpartanNotFoundException("Spartan by id: " + id + " does not exist");
             }
-        }
-        throw new ValidationException("A valid API key is needed for this feature");
+        } throw new InvalidApiKeyException("A valid API key is needed for this feature");
     }
 
     @GetMapping("spartans/{id}")
     public EntityModel<SpartanEntity> findSpartanById(@PathVariable("id") String id) {
-        //add exception
         Link[] links = new Link[2];
         SpartanEntity spartanEntity = repository.findById(id).orElseThrow(() -> new SpartanNotFoundException("Spartan by id: " + id + " does not exist"));
         links[0] = Link.of("http://localhost:8080/courses/" + spartanEntity.getCourseId()).withRel("course");
         links[1] = Link.of("http://localhost:8080/spartans/" + spartanEntity.getId()).withSelfRel();
-        return EntityModel.of(spartanEntity,
-                links
-        );
-
+        return EntityModel.of(spartanEntity, links);
     }
 
     @PostMapping("/spartans/{apiKey}")
     public SpartanEntity addSpartan(@RequestBody SpartanEntity spartan, @PathVariable("apiKey") String apiKey) throws ValidationException {
         List<APIKeyEntity> allKeys = apiKeyRepository.findAllByAPIKeyIsNotNull();
         for (APIKeyEntity key: allKeys) {
-            SpartanEntity spartan1 = nullCheckSpartan(spartan, apiKey, key);
-            if (spartan1 != null) return spartan1;
+            return nullCheckSpartan(spartan, apiKey, key);
         }
-        throw new ValidationException("Invalid API Key");
+        throw new InvalidApiKeyException("A valid API key is needed for this feature.");
     }
 
     @PutMapping("/spartans/{apiKey}")
@@ -121,16 +113,15 @@ public class SpartanController {
                         } else {
                             if (LocalDate.parse(updatedSpartan.getCourseEndDate()).isBefore(LocalDate.of(2050, 12, 31))) {
                                 return new ResponseEntity<>(repository.save(updatedSpartan), HttpStatus.OK);
-                            } else {
-                                throw new ValidationException("Spartan cannot be created due to the end date being past 31-12-2050");
-                            }
+                            } throw new ValidationException("Spartan cannot be created due to the end date being past 31-12-2050");
+
                         }
                     }
                 }
                 return new ResponseEntity<>(updatedSpartan, HttpStatus.BAD_REQUEST);
             }
         }
-        throw new ValidationException("Invalid API Key");
+        throw new InvalidApiKeyException("A valid API key is needed for this feature.");
     }
 
     private SpartanEntity calculateEndDate(SpartanEntity spartan, int weeksToAdd) throws ValidationException {
@@ -143,25 +134,23 @@ public class SpartanController {
         spartan.setCourseEndDate(String.valueOf(LocalDate.parse(endDate, DateTimeFormatter.ofPattern("yyyy-MM-dd"))));
         if( LocalDate.parse(spartan.getCourseEndDate()).isBefore(LocalDate.of(2050,12,31))) {
             return spartanRepository.save(spartan);
-        }
-        else {
-            throw new ValidationException("Spartan cannot be created, due to the start date causing the end date to be after 31-12-2050");
-        }
+        } throw new ValidationException("Spartan cannot be created, due to the start date causing the end date to be after 31-12-2050");
+
     }
 
     @PostMapping("/spartans")
     public void spartanWithoutAPIKeyPost() throws ValidationException {
-        throw new ValidationException("Need an API Key to perform this action !!!");
+        throw new InvalidApiKeyException("A valid API key is needed for this feature.");
     }
 
     @PutMapping("/spartans")
     public void spartanWithoutAPIKeyPut() throws ValidationException {
-        throw new ValidationException("Need an API Key to perform this action !!!");
+        throw new InvalidApiKeyException("A valid API key is needed for this feature.");
     }
 
     @DeleteMapping("/spartans/{id}")
-    public void spartanWithoutAPIKeyPutDelete(@PathVariable("id") String id) throws ValidationException {
-        throw new ValidationException("Need an API Key to perform this action !!!");
+    public void spartanWithoutAPIKeyDelete(@PathVariable("id") String id) throws ValidationException {
+        throw new InvalidApiKeyException("A valid API key is needed for this feature.");
     }
 
     private boolean checkSpartan(SpartanEntity spartan) throws ValidationException {
@@ -171,21 +160,11 @@ public class SpartanController {
                     if(spartan.getCourseId() > 0) {
                         if (spartan.getCourseId() < courseRepository.findAllByCourseNameIsNotNull().size()) {
                             return true;
-                        } else {
-                            throw new CourseNotFoundException("Course id is not within range of available courses.");
-                        }
-                    } else {
-                        throw new CourseNotFoundException("Course id cannot be negative.");
-                    }
-                } else {
-                    throw new ValidationException("Course start date must be after 31/12/2021.");
-                }
-            } else {
-                throw new ValidationException("Last name must be less that 100 characters.");
-            }
-        } else {
-            throw new ValidationException("First name must be less that 100 characters.");
-        }
+                        } throw new CourseNotFoundException("Course id is not within range of available courses.");
+                    } throw new CourseNotFoundException("Course id cannot be negative.");
+                } throw new ValidationException("Course start date must be after 31/12/2021.");
+            } throw new ValidationException("Last name must be less that 100 characters.");
+        } throw new ValidationException("First name must be less that 100 characters.");
     }
 
     private SpartanEntity nullCheckSpartan(SpartanEntity spartan, String apiKey, APIKeyEntity key) throws ValidationException {
@@ -200,12 +179,11 @@ public class SpartanController {
                                     return calculateEndDate(spartan, course.getLength());
                                 }
                             }
-                        }else {throw new ValidationException("Spartan cannot be created due to no course id being present.");}
-                    } else {throw new ValidationException("Spartan cannot be created due to no start date being present.");}
-                } else {throw new ValidationException("Spartan cannot be created due to no last name being present.");}
-            } else {throw new ValidationException("Spartan cannot be created due to no first name being present.");}
-        }
-        return null;
+                        } throw new ValidationException("Spartan cannot be created due to no course id being present.");
+                    } throw new ValidationException("Spartan cannot be created due to no start date being present.");
+                } throw new ValidationException("Spartan cannot be created due to no last name being present.");
+            } throw new ValidationException("Spartan cannot be created due to no first name being present.");
+        } throw new InvalidApiKeyException("A valid API key is needed for this feature.");
     }
 
 }

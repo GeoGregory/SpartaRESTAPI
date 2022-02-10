@@ -14,6 +14,14 @@ import javax.xml.bind.ValidationException;
 public class SpartanControllerExceptionHandler {
 
     @ResponseBody
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ExceptionHandler(InvalidApiKeyException.class)
+    ErrorMessage exceptionInvalidHandler(ValidationException e) {
+        return new ErrorMessage("401", e.getMessage());
+    }
+
+
+    @ResponseBody
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(ValidationException.class)
     ErrorMessage exceptionBadHandler(ValidationException e) {
@@ -23,9 +31,8 @@ public class SpartanControllerExceptionHandler {
     @ResponseBody
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler({SpartanNotFoundException.class, CourseNotFoundException.class})
-    ErrorMessage exceptionBadHandler(RuntimeException e) {
+    ErrorMessage exceptionNotFoundHandler(RuntimeException e) {
         return new ErrorMessage("404", e.getMessage());
     }
-
 
 }
