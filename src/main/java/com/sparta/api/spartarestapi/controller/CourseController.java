@@ -128,7 +128,7 @@ public class CourseController {
                 repository.delete(repository.findByCourseId(id).orElseThrow(() -> new CourseNotFoundException("Course ID not found")));
                 return new ResponseEntity<>("Successfully deleted course with id : " + id, HttpStatus.OK);
             } else {
-                throw new SpartanNotFoundException("Course by id: " + id + " does not exist");
+                throw new CourseNotFoundException("Course by id: " + id + " does not exist");
             }
         }
         throw new ValidationException("A valid API key is needed for this feature");
