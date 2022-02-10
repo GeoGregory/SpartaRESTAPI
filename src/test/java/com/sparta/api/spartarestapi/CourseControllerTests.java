@@ -1,7 +1,9 @@
 package com.sparta.api.spartarestapi;
 
 import com.sparta.api.spartarestapi.controller.CourseController;
+import com.sparta.api.spartarestapi.entities.APIKeyEntity;
 import com.sparta.api.spartarestapi.entities.CourseEntity;
+import com.sparta.api.spartarestapi.repositories.APIKeyRepository;
 import com.sparta.api.spartarestapi.repositories.CourseRepository;
 import com.sparta.api.spartarestapi.repositories.SpartanRepository;
 import org.junit.jupiter.api.Assertions;
@@ -21,17 +23,22 @@ public class CourseControllerTests {
 
     private CourseRepository mockCourseRepository;
     private SpartanRepository mockSpartanRepository;
+    private APIKeyRepository mockApiKeyRepository;
     private CourseEntity testCourse1;
     private CourseEntity testCourse2;
+    private APIKeyEntity apiKeyEntity;
     private CourseController courseController;
 
     @BeforeEach
     void setup(){
         mockCourseRepository = Mockito.mock(CourseRepository.class);
         mockSpartanRepository = Mockito.mock(SpartanRepository.class);
+        mockApiKeyRepository = Mockito.mock(APIKeyRepository.class);
+        apiKeyEntity = new APIKeyEntity("TestKey", "TestApiKey");
+        Mockito.when(mockApiKeyRepository.findAllByAPIKeyIsNotNull()).thenReturn(List.of(apiKeyEntity));
         testCourse1 = new CourseEntity("testsCourseId", 1, "testCourse", "test", true, 8);
         testCourse2 = new CourseEntity("testsCourseId", 11, "testCourse", "test", true, 8);
-        courseController = new CourseController(mockCourseRepository, mockSpartanRepository);
+        courseController = new CourseController(mockCourseRepository, mockSpartanRepository, mockApiKeyRepository);
     }
 
     @Test
@@ -41,7 +48,7 @@ public class CourseControllerTests {
 
     @Test
     public void saveNewCourse() throws ValidationException {
-        courseController.addCourse(testCourse2);
+        courseController.addCourse(testCourse2, apiKeyEntity.getAPIKey());
         Mockito.verify(mockCourseRepository).save(testCourse2);
     }
 

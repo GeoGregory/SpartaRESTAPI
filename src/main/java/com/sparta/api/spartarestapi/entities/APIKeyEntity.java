@@ -28,6 +28,14 @@ public class APIKeyEntity {
         this.APIKey = API_KEY;
     }
 
+    public APIKeyEntity() {
+    }
+
+    public APIKeyEntity(String id, String APIKey) {
+        this.id = id;
+        this.APIKey = APIKey;
+    }
+
     @Override
     public int hashCode() {
         return super.hashCode();

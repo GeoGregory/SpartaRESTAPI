@@ -1,7 +1,9 @@
 package com.sparta.api.spartarestapi;
 
 import com.sparta.api.spartarestapi.controller.SpartanController;
+import com.sparta.api.spartarestapi.entities.APIKeyEntity;
 import com.sparta.api.spartarestapi.entities.SpartanEntity;
+import com.sparta.api.spartarestapi.repositories.APIKeyRepository;
 import com.sparta.api.spartarestapi.repositories.CourseRepository;
 import com.sparta.api.spartarestapi.repositories.SpartanRepository;
 import org.junit.jupiter.api.Assertions;
@@ -24,13 +26,18 @@ public class SpartanControllerTests {
     private SpartanController spartanController;
     private CourseRepository mockCourseRepository;
     private SpartanRepository mockSpartanRepository;
+    private APIKeyRepository mockApiKeyRepository;
+    private APIKeyEntity apiKeyEntity;
 
     @BeforeEach
     void setup() {
-//        mockCourseRepository = Mockito.mock(CourseRepository.class);
+        mockCourseRepository = Mockito.mock(CourseRepository.class);
         mockSpartanRepository = Mockito.mock(SpartanRepository.class);
+        mockApiKeyRepository = Mockito.mock(APIKeyRepository.class);
+        apiKeyEntity = new APIKeyEntity("TestKey", "TestApiKey");
+        Mockito.when(mockApiKeyRepository.findAllByAPIKeyIsNotNull()).thenReturn(List.of(apiKeyEntity));
         spartanTestEntity = new SpartanEntity("spartanID","2022-04-15","2022-02-9",4,"Hendrix","Gardner");
-        spartanController = new SpartanController(mockSpartanRepository, mockCourseRepository);
+        spartanController = new SpartanController(mockSpartanRepository, mockCourseRepository, mockApiKeyRepository);
 //        Mockito.when(mockSpartanRepository.findAllByFirstNameIsNotNull()).thenReturn(List.of(spartanTestEntity));
     }
 
