@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface APIKeyRepository extends MongoRepository<APIKeyEntity, String> {
     List<APIKeyEntity> findAllByAPIKeyIsNotNull();
+    APIKeyEntity findByUsernameEqualsAndPasswordEquals(String username, String password);
+    APIKeyEntity findByUsernameEquals(String username);
 }
