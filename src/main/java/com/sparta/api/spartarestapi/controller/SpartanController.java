@@ -73,9 +73,12 @@ public class SpartanController {
     @GetMapping("spartans/{id}")
     public EntityModel<SpartanEntity> findSpartanById(@PathVariable("id") String id) {
         //add exception
+        Link[] links = new Link[2];
         SpartanEntity spartanEntity = repository.findById(id).orElseThrow(() -> new SpartanNotFoundException("Spartan by id: " + id + " does not exist"));
+        links[0] = Link.of("http://localhost:8080/courses/" + spartanEntity.getCourseId()).withRel("course");
+        links[1] = Link.of("http://localhost:8080/spartans/" + spartanEntity.getId()).withSelfRel();
         return EntityModel.of(spartanEntity,
-                Link.of("http://localhost:8080/courses/" + spartanEntity.getCourseId()).withRel("course")
+                links
         );
 
     }
