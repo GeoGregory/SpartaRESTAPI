@@ -4,6 +4,7 @@ import com.sparta.api.spartarestapi.entities.APIKeyEntity;
 import com.sparta.api.spartarestapi.entities.CourseEntity;
 import com.sparta.api.spartarestapi.entities.SpartanEntity;
 import com.sparta.api.spartarestapi.exceptions.CourseNotFoundException;
+import com.sparta.api.spartarestapi.exceptions.SpartanNotFoundException;
 import com.sparta.api.spartarestapi.repositories.APIKeyRepository;
 import com.sparta.api.spartarestapi.repositories.CourseRepository;
 import com.sparta.api.spartarestapi.repositories.SpartanRepository;
@@ -117,6 +118,20 @@ public class CourseController {
             return new ResponseEntity<>(updatedCourse, HttpStatus.BAD_REQUEST);
         }
         throw new ValidationException("Invalid API Key");
+    }
+
+    @DeleteMapping("/courses/{id}/{apiKey}")
+    public ResponseEntity<String> deleteCourse(@PathVariable("id") Integer id, @PathVariable("apiKey") String apiKey) throws ValidationException {
+        APIKeyEntity key = apiKeyRepository.findByUsernameEquals("ADMIN");
+        if (key.getAPIKey().equals(apiKey)) {
+            if(repository.findByCourseId(id).isPresent()){
+                repository.delete(repository.findByCourseId(id).orElseThrow(() -> new CourseNotFoundException("Course ID not found")));
+                return new ResponseEntity<>("Successfully deleted course with id : " + id, HttpStatus.OK);
+            } else {
+                throw new SpartanNotFoundException("Course by id: " + id + " does not exist");
+            }
+        }
+        throw new ValidationException("A valid API key is needed for this feature");
     }
 
     @PostMapping("/courses/")
