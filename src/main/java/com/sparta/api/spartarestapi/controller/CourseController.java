@@ -79,23 +79,23 @@ public class CourseController {
 
     @GetMapping("/courses/isActive")
     public CollectionModel<CourseEntity> getActiveCourses(){
-        List<CourseEntity> activeCourse = new ArrayList<>();
-        for (CourseEntity course : repository.findAllByCourseNameIsNotNull()){
-            if(course.getActive()){
-                activeCourse.add(course);
-            }
-        }
+        List<CourseEntity> activeCourse = repository.findAllByIsActiveEqualsAndCourseNameIsNotNull(true);
+//        for (CourseEntity course : repository.findAllByCourseNameIsNotNull()){
+//            if(course.getActive()){
+//                activeCourse.add(course);
+//            }
+//        }
         return CollectionModel.of(activeCourse);
     }
 
     @GetMapping("/courses/nonActive")
     public CollectionModel<CourseEntity> getNonActiveCourses() throws ValidationException{
-        List<CourseEntity> nonActiveCourse = new ArrayList<>();
-        for (CourseEntity course : repository.findAllByCourseNameIsNotNull()){
-            if(!course.getActive()){
-                nonActiveCourse.add(course);
-            }
-        }
+        List<CourseEntity> nonActiveCourse = repository.findAllByIsActiveEqualsAndCourseNameIsNotNull(false);
+//        for (CourseEntity course : repository.findAllByCourseNameIsNotNull()){
+//            if(!course.getActive()){
+//                nonActiveCourse.add(course);
+//            }
+//        }
         if (nonActiveCourse.isEmpty()) {
             throw new ValidationException("No non-active courses available");
         }
