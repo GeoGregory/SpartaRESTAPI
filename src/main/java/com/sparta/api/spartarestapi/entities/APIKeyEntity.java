@@ -11,6 +11,8 @@ public class APIKeyEntity {
     private String id;
     @Field("API_KEY")
     private String APIKey;
+    private String username;
+    private String password;
 
     public String getId() {
         return id;
@@ -26,6 +28,22 @@ public class APIKeyEntity {
 
     public void setAPIKey(String API_KEY) {
         this.APIKey = API_KEY;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public APIKeyEntity() {
