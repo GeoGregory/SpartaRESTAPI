@@ -34,7 +34,12 @@ To make sure the API works as intended we did a load of internal test on differe
 Our test team also created a testing framework which can be accessed via the link: https://github.com/JamesDorling/SpartaRestAPITesting
 
 ## Future Steps
-Messaging system...
+In the future, there's a couple of additions we would look to add:
+1. Implement a messaging system with Apache Kafka. The API can post messages to Apache Kafka and then Kafka can organise the data and make it available to multiple users in a standard format.
+#
+2. Implement a configurable actuator to monitor how the API is being used. Using different endpoints such as health, metrics and mappings, we could manage the system and log internal functionality.
+#
+3. Distribute the API key automatically to end users. API keys are requested internally by the team but there's currently no way to request a key to anyone without access to the API itself. 
 
 ## Contributing
 Project not currently open for extension.
